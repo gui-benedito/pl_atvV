@@ -2,34 +2,34 @@ import { Table, Column, Model, DataType, HasMany, PrimaryKey, AutoIncrement, } f
 import { Pet } from './Pet';
   
   @Table({
-    tableName: 'Usuario',
+    tableName: 'Cliente',
     timestamps: false,
   })
-  export class Usuario extends Model {
+  export class Cliente extends Model {
     @PrimaryKey
     @AutoIncrement
     @Column({
       type: DataType.INTEGER,
     })
-    usuario_id!: number;
+    cliente_id!: number;
   
     @Column({
       type: DataType.STRING,
       allowNull: false,
     })
-    usuario_nome!: string;
+    cliente_nome!: string;
   
     @Column({
       type: DataType.STRING,
       allowNull: false,
     })
-    usuario_nomeSocial!: string;
+    cliente_nomeSocial!: string;
   
     @Column({
       type: DataType.STRING,
       allowNull: false,
     })
-    usuario_cpf!: string;
+    cliente_cpf!: string;
   
     @Column({
       type: DataType.DATEONLY,
@@ -41,7 +41,7 @@ import { Pet } from './Pet';
       type: DataType.STRING,
       allowNull: false,
     })
-    usuario_rg!: string;
+    cliente_rg!: string;
   
     @Column({
       type: DataType.DATEONLY,
@@ -53,13 +53,13 @@ import { Pet } from './Pet';
       type: DataType.STRING,
       allowNull: false,
     })
-    usuario_telefone!: string;
+    cliente_telefone!: string;
   
     @Column({
       type: DataType.STRING,
       allowNull: false,
     })
-    usuario_email!: string;
+    cliente_email!: string;
   
     @HasMany(() => Pet)
     pets!: Pet[];

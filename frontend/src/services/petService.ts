@@ -1,29 +1,29 @@
-export const clienteService = {
-    getAllClientes: async () => {
+export const petService = {
+    getAllPets: async () => {
         try {
-            const response = await fetch('http://localhost:5000/cliente')
-            const clientes = await response.json()
-            return clientes
+            const response = await fetch('http://localhost:5000/pet')
+            const pets = await response.json()
+            return pets
         } catch (error) {
             console.log(error)
             throw error
         }
     },
 
-    getClienteByID: async (id: number) => {
+    getPetByID: async (id: number) => {
         try {
-            const response = await fetch(`http://localhost:5000/cliente/${id}`)
-            const cliente = await response.json()
-            return cliente
+            const response = await fetch(`http://localhost:5000/pet/${id}`)
+            const pet = await response.json()
+            return pet
         } catch (error) {
             console.log(error)
             throw error
         }
     },
 
-    updateCliente: async(id: number, data: any) => {
+    updatePet: async(id: number, data: any) => {
         try {
-            const response = await fetch(`http://localhost:5000/cliente/${id}`, {
+            const response = await fetch(`http://localhost:5000/pet/${id}`, {
                 method: "PUT",
                 body: JSON.stringify(data),
                 headers: {"Content-type": "application/json; charset=UTF-8"}
@@ -34,9 +34,9 @@ export const clienteService = {
         }
     },
 
-    saveCliente: async (data: any) => {
+    savePet: async (data: any) => {
         try {
-            const response = await fetch(`http://localhost:5000/cliente`, {
+            const response = await fetch(`http://localhost:5000/pet`, {
                 method: "POST",
                 body: JSON.stringify(data),
                 headers: {"Content-type": "application/json; charset=UTF-8"}
@@ -47,14 +47,14 @@ export const clienteService = {
         }
     },
 
-    deleteCliente: async (id: number) => {
+    deletePet: async (id: number) => {
         try {
-            const response = await fetch(`http://localhost:5000/cliente/${id}`, {
+            const response = await fetch(`http://localhost:5000/pet/${id}`, {
                 method: "DELETE",
                 headers: {"Content-type": "application/json; charset=UTF-8"}
               })
             if(response){
-                console.log('Cliente deletado com sucesso')
+                console.log('Pet deletado com sucesso')
             }
         } catch (error) {
             console.log(error)

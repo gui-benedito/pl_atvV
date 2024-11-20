@@ -7,26 +7,42 @@ import { Navigate } from "react-router-dom";
 import { clienteService } from '../../services/clienteService'
 import Modal from "../../componentes/Modal";
 
+type ClienteType = {
+    cliente_id: number;
+    cliente_nome: string;
+    cliente_nomeSocial: string;
+    cliente_cpf: string
+    emissao_cpf: string
+    cliente_rg: string
+    emissao_rg: string
+    cliente_telefone: string;
+    cliente_email: string;
+    // pets: Pet[];
+}
+
 export default function AtualizarCliente() {
-    const [cliente, setCliente] = useState<Cliente | null>(null);
+    const [cliente, setCliente] = useState<ClienteType | null>(null);
     const [redirectToLista, setRedirectToLista] = useState(false);
     const [openModalCadastro, setOpenModalCadastro] = useState(false);
     const [openModalMensagem, setOpenModalMensagem] = useState(false);
 
     const fetchCliente = async (id: number) => {
         try {
-            const clientesData = await clienteService.getAllClientes();
+            const clientesData = await clienteService.getClienteByID(id);
             setCliente(clientesData);
+            console.log(clientesData)
         } catch (error) {
-            console.error("Error setting clientes:", error);
+            console.error("Error setting cliente:", error);
         }
-    }
+    }  
 
     useEffect(() => {
         const pathSegments = window.location.pathname.split("/");
-        const id = pathSegments[pathSegments.length - 1];
-        if (id) {
-            fetchCliente(+id)
+        const id = Number(pathSegments[pathSegments.length - 1]); 
+        if (!isNaN(id)) {
+            fetchCliente(id);
+        } else {
+            console.error("Invalid client ID in the URL.");
         }
     }, []);
 
@@ -44,7 +60,7 @@ export default function AtualizarCliente() {
         const cpfData = (document.getElementById("inCPFData") as HTMLInputElement).value;
         const rg = (document.getElementById("inRG") as HTMLInputElement).value;
         const rgData = (document.getElementById("inRGData") as HTMLInputElement).value;
-        const ddd = (document.getElementById("inDDD") as HTMLInputElement).value;
+        // const ddd = (document.getElementById("inDDD") as HTMLInputElement).value;
         const telefone = (document.getElementById("inTelefone") as HTMLInputElement).value;
         const email = (document.getElementById("inEmail") as HTMLInputElement).value;
 
@@ -55,9 +71,11 @@ export default function AtualizarCliente() {
             emissao_cpf: cpfData,
             cliente_rg: rg,
             emissao_rg: rgData,
-            cliente_telefone: `${ddd} ${telefone}`,
+            cliente_telefone: telefone,
             cliente_email: email
         }
+
+        clienteService.updateCliente(cliente.cliente_id, updatedCliente)
 
         setOpenModalCadastro(false);
         setOpenModalMensagem(true);
@@ -82,36 +100,29 @@ export default function AtualizarCliente() {
         <div className="container-fluid">
             <form id="form-cliente" onSubmit={handleSubmit}>
                 <div className="input-group mb-3">
-                    <input type="text" className="form-control" placeholder="Nome" id="inNome" defaultValue={cliente.nome} />
+                    <input type="text" className="form-control" placeholder="Nome" id="inNome" defaultValue={cliente.cliente_nome} />
                 </div>
                 <div className="input-group mb-3">
-                    <input type="text" className="form-control" placeholder="Nome social" id="inNomeSocial" defaultValue={cliente.nomeSocial} />
+                    <input type="text" className="form-control" placeholder="Nome social" id="inNomeSocial" defaultValue={cliente.cliente_nomeSocial} />
                 </div>
                 <div className="input-group mb-3">
-                    <input type="text" className="form-control" placeholder="CPF" id="inCPF" defaultValue={cliente.cpf.valor} />
+                    <input type="text" className="form-control" placeholder="CPF" id="inCPF" defaultValue={cliente.cliente_cpf} />
                 </div>
                 <div className="input-group mb-3">
-                    <input type="text" className="form-control" placeholder="Data de emissão" id="inCPFData" defaultValue={cliente.cpf.dataEmissao} />
+                    <input type="text" className="form-control" placeholder="Data de emissão" id="inCPFData" defaultValue={cliente.emissao_cpf} />
                 </div>
                 <div className="input-group mb-3">
-                    <input type="text" className="form-control" placeholder="RG" id="inRG" defaultValue={cliente.rg.valor} />
+                    <input type="text" className="form-control" placeholder="RG" id="inRG" defaultValue={cliente.cliente_rg} />
                 </div>
                 <div className="input-group mb-3">
-                    <input type="text" className="form-control" placeholder="Data de emissão" id="inRGData" defaultValue={cliente.rg.dataEmissao} />
+                    <input type="text" className="form-control" placeholder="Data de emissão" id="inRGData" defaultValue={cliente.emissao_rg} />
                 </div>
-                {cliente.telefones.map((t, i) => (
-                    <div key={i}>
-                        <div className="input-group mb-3">
-                            <input type="text" className="form-control" placeholder="DDD" id="inDDD" defaultValue={t.ddd} />
-                        </div>
-                        <div className="input-group mb-3">
-                            <input type="text" className="form-control" placeholder="Telefone" id="inTelefone" defaultValue={t.numero} />
-                        </div>
-                    </div>
-                ))}
+                <div className="input-group mb-3">
+                    <input type="text" className="form-control" placeholder="Telefone" id="inTelefone" defaultValue={cliente.cliente_telefone} />
+                </div>
                 <div className="input-group mb-3">
                     <span className="input-group-text">@</span>
-                    <input type="text" className="form-control" placeholder="E-mail" id="inEmail" defaultValue={cliente.email} />
+                    <input type="text" className="form-control" placeholder="E-mail" id="inEmail" defaultValue={cliente.cliente_email} />
                 </div>
                 <div className="input-group mb-3">
                     <button className="btn-atualizar" type="submit">Atualizar</button>

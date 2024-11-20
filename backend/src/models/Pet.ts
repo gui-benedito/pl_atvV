@@ -1,5 +1,5 @@
 import { Table, Column, Model, DataType, BelongsToMany, HasMany, PrimaryKey, AutoIncrement, ForeignKey, BelongsTo } from 'sequelize-typescript'
-import { Usuario } from './Usuario'
+import { Cliente } from './Cliente'
 
 @Table({
     tableName: 'Pet',
@@ -38,13 +38,13 @@ export class Pet extends Model {
     })
     pet_genero!: string
 
-    @ForeignKey(() => Usuario)
+    @ForeignKey(() => Cliente)
     @Column({
         type: DataType.INTEGER,
         allowNull: false,
     })
-    usuario_id!: number
+    cliente_id!: number
 
-    @BelongsTo(() => Usuario)
-    Usuario!: Usuario
+    @BelongsTo(() => Cliente)
+    Cliente!: Cliente
 }

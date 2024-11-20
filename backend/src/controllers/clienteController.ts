@@ -1,53 +1,53 @@
 import { Pet } from "../models/Pet";
-import { Usuario } from "../models/Usuario"
+import { Cliente } from "../models/Cliente"
 
-export const usuarioController = {
+export const clienteController = {
     save: async (req, res) => {
         try {
-            const { usuario_nome, usuario_nomeSocial, usuario_cpf, emissao_cpf, usuario_rg, emissao_rg, usuario_telefone, usuario_email } = req.body
+            const { cliente_nome, cliente_nomeSocial, cliente_cpf, emissao_cpf, cliente_rg, emissao_rg, cliente_telefone, cliente_email } = req.body
 
-            if (!usuario_nome || !usuario_nomeSocial || !usuario_cpf || !usuario_rg || !usuario_telefone || !usuario_email
+            if (!cliente_nome || !cliente_nomeSocial || !cliente_cpf || !cliente_rg || !cliente_telefone || !cliente_email
             ) {
             return res.status(400).json({ 
                 error: 'Todos os campos são obrigatórios.' 
             });
             }
 
-            const usuario = await Usuario.create({
-                usuario_nome, 
-                usuario_nomeSocial, 
-                usuario_cpf, 
+            const cliente = await Cliente.create({
+                cliente_nome, 
+                cliente_nomeSocial, 
+                cliente_cpf, 
                 emissao_cpf, 
-                usuario_rg, 
+                cliente_rg, 
                 emissao_rg, 
-                usuario_telefone, 
-                usuario_email
+                cliente_telefone, 
+                cliente_email
             })
 
-            if(!usuario){
+            if(!cliente){
                 return res.status(400).json({ error: 'Erro ao criar usuário' })
             }
 
-            return res.status(200).json(usuario)
+            return res.status(200).json(cliente)
         } catch (error) {
-            console.error('Erro ao criar usuario:', error);
+            console.error('Erro ao criar cliente:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     },
 
     show: async (req, res) => {
         try {
-            const usuarios = await Usuario.findAll({
+            const clientes = await Cliente.findAll({
                 include: Pet
             })
     
-            if(!usuarios){
+            if(!clientes){
                 return res.status(400).json({ error: 'Erro ao buscar usuários' })
             }
 
-            return res.status(200).json(usuarios)
+            return res.status(200).json(clientes)
         } catch (error) {
-            console.error('Erro ao buscar usuario:', error);
+            console.error('Erro ao buscar cliente:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     },
@@ -55,54 +55,54 @@ export const usuarioController = {
     showByID: async (req, res) => {
         try {
             const { id } = req.params
-            const usuario = await Usuario.findByPk(+id)
+            const cliente = await Cliente.findByPk(+id)
     
-            if(!usuario){
+            if(!cliente){
                 return res.status(400).json({ error: 'Erro ao buscar usuário' })
             }
 
-            return res.status(200).json(usuario)
+            return res.status(200).json(cliente)
         } catch (error) {
-            console.error('Erro ao buscar usuario:', error);
+            console.error('Erro ao buscar cliente:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     },
 
     update: async (req, res) => {
         try {
-            const { usuario_nome, usuario_nomeSocial, usuario_cpf, emissao_cpf, usuario_rg, emissao_rg, usuario_telefone, usuario_email } = req.body
+            const { cliente_nome, cliente_nomeSocial, cliente_cpf, emissao_cpf, cliente_rg, emissao_rg, cliente_telefone, cliente_email } = req.body
             const { id } = req.params
 
-            if (!usuario_nome || !usuario_nomeSocial || !usuario_cpf || !usuario_rg || !usuario_telefone || !usuario_email
+            if (!cliente_nome || !cliente_nomeSocial || !cliente_cpf || !cliente_rg || !cliente_telefone || !cliente_email
             ) {
             return res.status(400).json({ 
                 error: 'Todos os campos são obrigatórios.' 
             });
             }
 
-            const atualiza = await Usuario.update({
-                usuario_nome, 
-                usuario_nomeSocial, 
-                usuario_cpf, 
+            const atualiza = await Cliente.update({
+                cliente_nome, 
+                cliente_nomeSocial, 
+                cliente_cpf, 
                 emissao_cpf, 
-                usuario_rg, 
+                cliente_rg, 
                 emissao_rg, 
-                usuario_telefone, 
-                usuario_email
+                cliente_telefone, 
+                cliente_email
             }, {
-                where: {usuario_id: +id}
+                where: {cliente_id: +id}
             })
 
             if(!atualiza){
                 return res.status(400).json({ error: 'Erro ao buscar usuários' })
             }
 
-            const atualizada = await Usuario.findByPk(+id)
+            const atualizada = await Cliente.findByPk(+id)
 
             return res.status(200).json(atualizada)
 
         } catch (error) {
-            console.error('Erro ao buscar usuario:', error);
+            console.error('Erro ao buscar cliente:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     },
@@ -110,8 +110,8 @@ export const usuarioController = {
     delete: async (req, res) => {
         try {
             const { id } = req.params
-            const deleted = await Usuario.destroy({
-                where: {usuario_id: id}
+            const deleted = await Cliente.destroy({
+                where: {cliente_id: id}
             })
 
             if(!deleted){
@@ -120,7 +120,7 @@ export const usuarioController = {
 
             return res.status(200).json(deleted)
         } catch (error) {
-            console.error('Erro ao buscar usuario:', error);
+            console.error('Erro ao buscar cliente:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     }

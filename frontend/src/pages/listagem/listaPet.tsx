@@ -2,14 +2,14 @@ import { useState, useEffect } from "react";
 import PetCard from "./petCard";
 import imgSemCliente from "../../images/lista-vazia.jpg";
 import Modal from "../../componentes/Modal";
+import { petService } from "../../services/petService";
 
 type PetType = {
-    nome: string;
-    raca: string;
-    tipo: string;
-    genero: string;
-    tutorId: number;
-    tutorNome: string;
+    pet_nome: string;
+    pet_raca: string;
+    pet_tipo: string;
+    pet_genero: string;
+    cliente_id: number
 };
 
 export default function ListaPet() {
@@ -19,28 +19,18 @@ export default function ListaPet() {
     const [tutorId, setTutorId] = useState<number | null>(null);
     const [petNome, setPetNome] = useState<string>("");
 
-    useEffect(() => {
-        setPets(getPets());
-    }, []);
-
-    const getPets = (): PetType[] => {
-        const clientes = JSON.parse(localStorage.getItem("clientes") || "[]");
-        const pets: PetType[] = [];
-        
-        for (const cliente of clientes) {
-            for (const pet of cliente.pets) {
-                pets.push({
-                    tutorId: cliente.id,
-                    tutorNome: cliente.nome,
-                    nome: pet.nome,
-                    raca: pet.raca,
-                    tipo: pet.tipo,
-                    genero: pet.genero
-                });
-            }
+    const fetchPets = async () => {
+        try {
+            const pets = await petService.getAllPets()
+            setPets(pets)
+        } catch (error) {
+            console.error("Erro ao pegar pets:", error);
         }
-        return pets;
-    };
+    }
+
+    useEffect(() => {
+        fetchPets()
+    }, []);
 
     const closeModalMensagem = () => setOpenModalMensagem(false);
 
@@ -61,7 +51,7 @@ export default function ListaPet() {
                 if (petIndex !== -1) {
                     cliente.pets.splice(petIndex, 1);
                     localStorage.setItem("clientes", JSON.stringify(clientes));
-                    setPets(getPets());
+                    fetchPets()
                     setOpenModalExcluir(false);
                     setOpenModalMensagem(true);
                 }
@@ -83,15 +73,13 @@ export default function ListaPet() {
             ) : (
                 pets.map((p) => (
                     <PetCard
-                        key={`${p.tutorId}-${p.nome}`}
-                        nome={p.nome}
-                        genero={p.genero}
-                        tipo={p.tipo}
-                        raca={p.raca}
-                        tutorId={p.tutorId}
-                        tutorNome={p.tutorNome}
-                        onExcluir={() => openModalConfirmaExcluir(p.tutorId, p.nome)}
-                    />
+                        key={`${p.cliente_id}-${p.pet_nome}`}
+                        nome={p.pet_nome}
+                        genero={p.pet_genero}
+                        tipo={p.pet_tipo}
+                        raca={p.pet_raca}
+                        tutorId={p.cliente_id}
+                        onExcluir={() => openModalConfirmaExcluir(p.cliente_id, p.pet_nome)} tutorNome={""}                    />
                 ))
             )}
 

@@ -1,12 +1,12 @@
 import { Pet } from "../models/Pet"
-import { Usuario } from "../models/Usuario";
+import { Cliente } from "../models/Cliente";
 
 export const petController = {
     save: async (req, res) => {
         try {
-            const { pet_nome, pet_tipo, pet_raca, pet_genero, usuario_id } = req.body
+            const { pet_nome, pet_tipo, pet_raca, pet_genero, cliente_id } = req.body
 
-            if ( !pet_nome || !pet_tipo || !pet_raca || !pet_genero || !usuario_id
+            if ( !pet_nome || !pet_tipo || !pet_raca || !pet_genero || !cliente_id
             ) {
             return res.status(400).json({ 
                 error: 'Todos os campos são obrigatórios.' 
@@ -18,7 +18,7 @@ export const petController = {
                 pet_tipo,
                 pet_raca,
                 pet_genero,
-                usuario_id: +usuario_id
+                cliente_id: +cliente_id
             })
 
             if(!pet){
@@ -35,7 +35,7 @@ export const petController = {
     show: async (req, res) => {
         try {
             const usuarios = await Pet.findAll({
-                include: Usuario
+                include: Cliente
             })
     
             if(!usuarios){
@@ -67,10 +67,10 @@ export const petController = {
 
     update: async (req, res) => {
         try {
-            const { pet_nome, pet_tipo, pet_raca, pet_genero, usuario_id } = req.body
+            const { pet_nome, pet_tipo, pet_raca, pet_genero, cliente_id } = req.body
             const { id } = req.params
 
-            if (!pet_nome || !pet_tipo || !pet_raca || !pet_genero || !usuario_id
+            if (!pet_nome || !pet_tipo || !pet_raca || !pet_genero || !cliente_id
             ) {
             return res.status(400).json({ 
                 error: 'Todos os campos são obrigatórios.' 
@@ -82,7 +82,7 @@ export const petController = {
                 pet_tipo,
                 pet_raca,
                 pet_genero,
-                usuario_id
+                cliente_id
             }, {
                 where: {pet_id: +id}
             })

@@ -77,6 +77,7 @@ export default function ListaCliente() {
                 ) : (
                     clientes.map((cliente) => (
                         <ClienteCard 
+                            key={cliente.cliente_id}
                             cliente_id={cliente.cliente_id} 
                             cliente_nome={cliente.cliente_nome} 
                             cliente_nomeSocial={cliente.cliente_nomeSocial} 

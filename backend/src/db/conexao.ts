@@ -1,6 +1,6 @@
 import { Sequelize } from 'sequelize-typescript';
 import mysql from 'mysql2/promise'; 
-import { Usuario } from '../models/Usuario';
+import { Cliente } from '../models/Cliente';
 import { Pet } from '../models/Pet';
 import Produto from '../models/Produto';
 import Servico from '../models/Servico';
@@ -33,7 +33,7 @@ export const initializeSequelize = async (): Promise<Sequelize> => {
       password: 'fatec',
       host: 'localhost',
       dialect: 'mysql',
-      models: [Usuario, Pet, Produto, Servico],
+      models: [Cliente, Pet, Produto, Servico],
     });
 
     await sequelize.authenticate();
