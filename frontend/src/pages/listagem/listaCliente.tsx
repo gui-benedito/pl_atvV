@@ -7,7 +7,7 @@ import { clienteService } from '../../services/clienteService'
 import '../css/style.css';
 import Pet from "../../modelo/pet";
 
-type ClienteType = {
+type Cliente = {
     cliente_id: number;
     cliente_nome: string;
     cliente_nomeSocial: string;
@@ -21,7 +21,7 @@ type ClienteType = {
 };
 
 export default function ListaCliente() {
-    const [clientes, setClientes] = useState<ClienteType[]>([]);
+    const [clientes, setClientes] = useState<Cliente[]>([]);
     const [openModalExcluir, setOpenModalExcluir] = useState(false);
     const [clienteIdParaExcluir, setClienteIdParaExcluir] = useState<number | null>(null);
     const [openModalMensagem, setOpenModalMensagem] = useState(false);

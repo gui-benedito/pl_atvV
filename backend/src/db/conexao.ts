@@ -4,6 +4,7 @@ import { Cliente } from '../models/Cliente';
 import { Pet } from '../models/Pet';
 import Produto from '../models/Produto';
 import Servico from '../models/Servico';
+import { Compra } from '../models/Compra';
 
 const createDatabase = async (): Promise<void> => {
   try {
@@ -33,7 +34,7 @@ export const initializeSequelize = async (): Promise<Sequelize> => {
       password: 'fatec',
       host: 'localhost',
       dialect: 'mysql',
-      models: [Cliente, Pet, Produto, Servico],
+      models: [Cliente, Pet, Produto, Servico, Compra],
     });
 
     await sequelize.authenticate();

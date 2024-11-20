@@ -1,28 +1,39 @@
 import { useState, useEffect } from "react";
 import { Col, Row } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
-import Servico from "../../modelo/servico";
 import Modal from "../../componentes/Modal";
+import { servicoService } from "../../services/servicoService";
+
+type Servico = {
+    servico_id: number;
+    servico_nome: string;
+    servico_preco: number;
+    onExcluir: (id: number) => void;
+};
 
 export default function AtualizarServico() {
-    const [produto, setProduto] = useState<Servico | null>(null);
+    const [servico, setServico] = useState<Servico | null>(null);
     const [nomeState, setNomeState] = useState("");
-    const [valorState, setValorState] = useState(0);
+    const [precoState, setPrecoState] = useState(0);
     const [redirectToLista, setRedirectToLista] = useState(false);
     const [openModalCadastro, setOpenModalCadastro] = useState(false);
     const [openModalMensagem, setOpenModalMensagem] = useState(false);
 
+    const fetchServico = async(id: number) => {
+        try {
+            const servicoFound = await servicoService.getServicoByID(id)
+            setServico(servicoFound)
+            console.log(servicoFound)
+        } catch (error) {
+            console.error("Erro ao pegar serviço:", error);
+        }
+    }
+
     useEffect(() => {
         const pathSegments = window.location.pathname.split('/');
-        const id = pathSegments[pathSegments.length - 1];
+        const id = Number(pathSegments[pathSegments.length - 1])
         if (id) {
-            const produtosSalvos = JSON.parse(localStorage.getItem("servicos") || "[]");
-            const foundProduto = produtosSalvos.find((c: { id: number }) => c.id === +id);
-            if (foundProduto) {
-                setProduto(foundProduto);
-                setNomeState(foundProduto.nome);
-                setValorState(foundProduto.valor);
-            }
+            fetchServico(id)
         }
     }, []);
 
@@ -31,18 +42,16 @@ export default function AtualizarServico() {
         setOpenModalCadastro(true);
     };
 
-    const confirmaAtualizacao = () => {
-        const produtosSalvos = JSON.parse(localStorage.getItem("servicos") || "[]");
-        if (!produto) return;
-        const updatedProduto = new Servico(
-            produto.id,
-            nomeState || produto.nome,
-            valorState !== 0 ? valorState : produto.valor,
-        );
-        const updatedProdutos = produtosSalvos.map((c: { id: number }) =>
-            (c.id === produto.id ? updatedProduto : c)
-        );
-        localStorage.setItem("servicos", JSON.stringify(updatedProdutos));
+    const confirmaAtualizacao = async () => {
+        const nome = (document.getElementById("inNome") as HTMLInputElement).value;
+        const preco = (document.getElementById("inPreco") as HTMLInputElement).value;
+        const servicoAtualizado = {
+            servico_nome: nome,
+            servico_preco: preco
+        }
+        if(servico){
+            await servicoService.updateServico(servico.servico_id, servicoAtualizado)
+        }
         setOpenModalCadastro(false);
         setOpenModalMensagem(true);
     };
@@ -58,7 +67,7 @@ export default function AtualizarServico() {
         return <Navigate to="/servico" />;
     }
 
-    if (!produto) return null;
+    if (!servico) return null;
 
     return (
         <div className="container-fluid">
@@ -74,7 +83,7 @@ export default function AtualizarServico() {
                                 aria-label="Nome"
                                 id="inNome"
                                 onChange={(e) => setNomeState(e.target.value)}
-                                value={nomeState}
+                                defaultValue={servico.servico_nome}
                             />
                         </div>
                     </Col>
@@ -83,11 +92,11 @@ export default function AtualizarServico() {
                             <input
                                 type="number"
                                 className="form-control"
-                                placeholder="Valor"
-                                aria-label="Valor"
-                                id="inValor"
-                                onChange={(e) => setValorState(+e.target.value)}
-                                value={valorState}
+                                placeholder="Preco"
+                                aria-label="Preco"
+                                id="inPreco"
+                                onChange={(e) => setPrecoState(+e.target.value)}
+                                defaultValue={servico.servico_preco}
                             />
                         </div>
                     </Col>

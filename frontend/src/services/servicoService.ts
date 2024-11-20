@@ -1,5 +1,5 @@
-export const petService = {
-    getAllProdutp: async () => {
+export const servicoService = {
+    getAllServico: async () => {
         try {
             const response = await fetch('http://localhost:5000/servico')
             const servicos = await response.json()

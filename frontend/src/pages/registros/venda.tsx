@@ -1,38 +1,127 @@
-import { useState } from "react";
-import Produto from "../../modelo/produto";
-import Servico from "../../modelo/servico";
-import Cliente from "../../modelo/cliente";
+import { useEffect, useRef, useState } from "react";
 import { Col, Form, Row } from "react-bootstrap";
 import '../css/style.css';
 import Modal from "../../componentes/Modal";
+import { clienteService } from "../../services/clienteService";
+import { produtoService } from "../../services/produtoService";
+import { servicoService } from "../../services/servicoService";
+import { petService } from "../../services/petService";
+import { compraService } from "../../services/compraService";
+
+type Cliente = {
+    cliente_id: number;
+    cliente_nome: string;
+    cliente_nomeSocial: string;
+    cliente_cpf: string
+    emissao_cpf: string
+    cliente_rg: string
+    emissao_rg: string
+    cliente_telefone: string;
+    cliente_email: string;
+    // pets: Pet[];
+};
+
+type Produto = {
+    produto_id: number;
+    produto_nome: string;
+    produto_preco: number;
+    produto_quantidade: number;
+};
+
+type Servico = {
+    servico_id: number;
+    servico_nome: string;
+    servico_preco: number;
+};
+
+type Pet = {
+    pet_id: number
+    pet_nome: string
+    pet_raca: string
+    pet_tipo: string
+    pet_genero: string
+    cliente_id: number
+};
 
 export default function Venda() {
-    const [clientes, setClientes] = useState<Cliente[] | null>(JSON.parse(localStorage.getItem('clientes') || '[]'));
-    const [produtos, setProdutos] = useState<Produto[] | null>(JSON.parse(localStorage.getItem('produtos') || '[]'));
-    const [servicos, setServicos] = useState<Servico[] | null>(JSON.parse(localStorage.getItem('servicos') || '[]'));
+    const [clientes, setClientes] = useState<Cliente[] | null>();
+    const [produtos, setProdutos] = useState<Produto[] | null>();
+    const [servicos, setServicos] = useState<Servico[] | null>();
+    const [pets, setPets] = useState<Pet[] | null>()
     const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
     const [produtoSelecionado, setProdutoSelecionado] = useState<Produto | null>(null);
     const [servicoSelecionado, setServicoSelecionado] = useState<Servico | null>(null);
-    const [quantidade, setQuantidade] = useState(0);
+    const [petSelecionado, setPetSelecionado] = useState<Pet | null>(null);
+    const [quantidade, setQuantidade] = useState<number | null>(null);
     const [openModalCadastro, setOpenModalCadastro] = useState(false);
     const [openModalMensagem, setOpenModalMensagem] = useState(false);
     const [openModalMensagemQuantidade, setOpenModalMensagemQuantidade] = useState(false);
 
+    const formRef = useRef<HTMLFormElement | null>(null)
+
+    const fetchClientes = async () => {
+        try {
+            const clientesData = await clienteService.getAllClientes();
+            setClientes(clientesData);
+        } catch (error) {
+            console.error("Error setting clientes:", error);
+        }
+    }
+
+    const fetchServico = async () => {
+        try {
+            const servicosFound = await servicoService.getAllServico()
+            setServicos(servicosFound)
+        } catch (error) {
+            console.error("Erro ao pegar serviços:", error);
+        }
+    }
+
+    const fetchProdutos = async() => {
+        try {
+            const storedProdutos = await produtoService.getAllProduto()
+            setProdutos(storedProdutos);
+        } catch (error) {
+            console.error("Erro ao pegar produtos:", error);
+        }
+    }
+
+    const fetchPets = async () => {
+        try {
+            const pets = await petService.getAllPets()
+            setPets(pets)
+        } catch (error) {
+            console.error("Erro ao pegar pets:", error);
+        }
+    }
+
+    useEffect(() => {
+        fetchServico()
+        fetchClientes()
+        fetchProdutos()
+        fetchPets()
+    }, []);
+
     const handleQuantidade = (quantidade: number) => setQuantidade(quantidade);
 
     const handleCliente = (id: number) => {
-        const cliente = clientes?.find((c) => c.id === id) || null;
+        const cliente = clientes?.find((c) => c.cliente_id === id) || null;
         setClienteSelecionado(cliente);
     };
 
     const handleProduto = (id: number) => {
-        const produto = produtos?.find((c) => c.id === id) || null;
+        const produto = produtos?.find((c) => c.produto_id === id) || null;
         setProdutoSelecionado(produto);
     };
 
     const handleServico = (id: number) => {
-        const servico = servicos?.find((c) => c.id === id) || null;
+        const servico = servicos?.find((c) => c.servico_id === id) || null;
         setServicoSelecionado(servico);
+    };
+
+    const handlePet = (id: number) => {
+        const pet = pets?.find((c) => c.pet_id === id) || null;
+        setPetSelecionado(pet);
     };
 
     const closeModalMensagemQuantidade = () => setOpenModalMensagemQuantidade(false);
@@ -48,41 +137,38 @@ export default function Venda() {
         }
     };
 
-    const confirmaCadastro = () => {
-        if (clientes && clienteSelecionado) {
-            const updatedClientes = clientes.map(cliente => {
-                if (cliente.id === clienteSelecionado.id) {
-                    if (produtoSelecionado) {
-                        for (let i = 0; i < quantidade; i++) {
-                            cliente.produtosConsumidos.push(produtoSelecionado);
-                        }
-                    }
-                    if (servicoSelecionado) {
-                        cliente.servicosConsumidos.push(servicoSelecionado);
-                    }
-                }
-                return cliente;
-            });
-            setClientes(updatedClientes);
-            localStorage.setItem('clientes', JSON.stringify(updatedClientes));
-            (document.getElementById('formVenda') as HTMLFormElement).reset();
-            setOpenModalCadastro(false);
-            setOpenModalMensagem(true);
+    const confirmaCadastro = async() => {
+        const newCompra = {
+            produto_id: produtoSelecionado?.produto_id,
+            servico_id: servicoSelecionado?.servico_id,
+            cliente_id: clienteSelecionado?.cliente_id,
+            pet_id: petSelecionado?.pet_id,
+            quantidade: quantidade,
+            valor: 0
         }
+        console.log(newCompra)
+        await compraService.saveCompra(newCompra)
+        setClienteSelecionado(null)
+        setProdutoSelecionado(null)
+        setServicoSelecionado(null)
+        setPetSelecionado(null)
+        setQuantidade(null)
+        setOpenModalCadastro(false)
+        formRef.current?.reset()
     };
 
-    if (!clientes || !produtos || !servicos) return null;
+    if (!clientes || !produtos || !servicos || !pets) return null;
 
     return (
         <div className="form-venda">
-            <form onSubmit={handleSubmit} id="formVenda">
+            <form onSubmit={handleSubmit} id="formVenda" ref={formRef}>
                 <Row>
                     <Col>
                         <Form.Select aria-label="Selecione o tutor" className="tutor-select" onChange={(e) => handleCliente(+e.target.value)}>
                             <option value={0}>Selecione o cliente</option>
                             {clientes.map((c: Cliente) => (
-                                <option value={c.id} key={c.id}>
-                                    {c.nome}
+                                <option value={c.cliente_id} key={c.cliente_id}>
+                                    {c.cliente_nome}
                                 </option>
                             ))}
                         </Form.Select>
@@ -91,8 +177,8 @@ export default function Venda() {
                         <Form.Select aria-label="Selecione o tutor" className="tutor-select" onChange={(e) => handleProduto(+e.target.value)}>
                             <option value={0}>Selecione o produto</option>
                             {produtos.map((p: Produto) => (
-                                <option value={p.id} key={p.id}>
-                                    {p.nome}
+                                <option value={p.produto_id} key={p.produto_id}>
+                                    {p.produto_nome}
                                 </option>
                             ))}
                         </Form.Select>
@@ -106,8 +192,18 @@ export default function Venda() {
                         <Form.Select aria-label="Selecione o tutor" className="tutor-select" onChange={(e) => handleServico(+e.target.value)}>
                             <option value={0}>Selecione o serviço</option>
                             {servicos.map((s: Servico) => (
-                                <option value={s.id} key={s.id}>
-                                    {s.nome}
+                                <option value={s.servico_id} key={s.servico_id}>
+                                    {s.servico_nome}
+                                </option>
+                            ))}
+                        </Form.Select>
+                    </Col>
+                    <Col>
+                        <Form.Select aria-label="Selecione o tutor" className="tutor-select" onChange={(e) => handlePet(+e.target.value)}>
+                            <option value={0}>Selecione o pet</option>
+                            {pets.map((s: Pet) => (
+                                <option value={s.pet_id} key={s.pet_id}>
+                                    {s.pet_nome}
                                 </option>
                             ))}
                         </Form.Select>

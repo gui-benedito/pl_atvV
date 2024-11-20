@@ -3,16 +3,17 @@ import { Col, Row } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 import Modal from "../../componentes/Modal";
 import Servico from "../../modelo/servico";
+import { servicoService } from "../../services/servicoService";
 
 export default function FormularioCadastroServico() {
     const [nomeState, setNomeState] = useState("");
-    const [valorState, setValorState] = useState(0);
+    const [precoState, setPrecoState] = useState(0);
     const [redirectToLista, setRedirectToLista] = useState(false);
     const [openModalCadastro, setOpenModalCadastro] = useState(false);
     const [openModalMensagem, setOpenModalMensagem] = useState(false);
 
     const handleNome = (nome: string) => setNomeState(nome);
-    const handleValor = (valor: number) => setValorState(valor);
+    const handlePreco = (preco: number) => setPrecoState(preco);
 
     const closeModalCadastro = () => setOpenModalCadastro(false);
     const closeModalMensagem = () => setOpenModalMensagem(false);
@@ -22,12 +23,12 @@ export default function FormularioCadastroServico() {
         setOpenModalCadastro(true);
     };
 
-    const confirmaCadastro = () => {
-        const servicos = JSON.parse(localStorage.getItem("servicos") || "[]");
-        const id = servicos.length > 0 ? servicos[servicos.length - 1].id + 1 : 1;
-        const newServico = new Servico(id, nomeState, valorState);
-        servicos.push(newServico);
-        localStorage.setItem("servicos", JSON.stringify(servicos));
+    const confirmaCadastro = async () => {
+        const newServico = {
+            servico_nome: nomeState,
+            servico_preco: precoState
+        }
+        await servicoService.saveServico(newServico)
         setOpenModalCadastro(false);
         setOpenModalMensagem(true);
     };
@@ -69,11 +70,11 @@ export default function FormularioCadastroServico() {
                             <input
                                 type="number"
                                 className="form-control"
-                                placeholder="Valor"
-                                aria-label="Valor"
+                                placeholder="Preco"
+                                aria-label="Preco"
                                 aria-describedby="basic-addon1"
-                                id="inValor"
-                                onChange={(e) => handleValor(+e.target.value)}
+                                id="inPreco"
+                                onChange={(e) => handlePreco(+e.target.value)}
                             />
                         </div>
                     </Col>

@@ -2,12 +2,12 @@ import { useState, useEffect } from "react";
 import ServicoCard from "./servicoCard";
 import imgSemServio from "../../images/servico-vazio.jpg";
 import Modal from "../../componentes/Modal";
+import { servicoService } from "../../services/servicoService";
 
 type Servico = {
-    id: number;
-    nome: string;
-    valor: number;
-    quantidade: number;
+    servico_id: number;
+    servico_nome: string;
+    servico_preco: number;
 };
 
 export default function ListaServico() {
@@ -16,9 +16,17 @@ export default function ListaServico() {
     const [openModalExcluir, setOpenModalExcluir] = useState(false);
     const [openModalMensagem, setOpenModalMensagem] = useState(false);
 
+    const fetchServico = async () => {
+        try {
+            const servicosFound = await servicoService.getAllServico()
+            setServicos(servicosFound)
+        } catch (error) {
+            console.error("Erro ao pegar serviços:", error);
+        }
+    }
+
     useEffect(() => {
-        const storedServicos = JSON.parse(localStorage.getItem("servicos") || "[]");
-        setServicos(storedServicos);
+        fetchServico()
     }, []);
 
     const closeModalExcluir = () => setOpenModalExcluir(false);
@@ -30,11 +38,10 @@ export default function ListaServico() {
 
     const closeModalMensagem = () => setOpenModalMensagem(false);
 
-    const confirmaExcluir = () => {
+    const confirmaExcluir = async () => {
         if (servicoIdparaExcluir !== null) {
-            const updatedServicos = servicos.filter((servico) => servico.id !== servicoIdparaExcluir);
-            localStorage.setItem("servicos", JSON.stringify(updatedServicos));
-            setServicos(updatedServicos);
+            await servicoService.deleteServico(servicoIdparaExcluir)
+            fetchServico()
             setOpenModalExcluir(false);
             setServicoIdparaExcluir(null);
             setOpenModalMensagem(true);
@@ -56,11 +63,11 @@ export default function ListaServico() {
                 ) : (
                     servicos.map((servico) => (
                         <ServicoCard
-                            key={servico.id}
-                            id={servico.id}
-                            nome={servico.nome}
-                            valor={servico.valor}
-                            onExcluir={() => openModalConfirmaExcluir(servico.id)}
+                            key={servico.servico_id}
+                            servico_id={servico.servico_id}
+                            servico_nome={servico.servico_nome}
+                            servico_preco={servico.servico_preco}
+                            onExcluir={() => openModalConfirmaExcluir(servico.servico_id)}
                         />
                     ))
                 )}
