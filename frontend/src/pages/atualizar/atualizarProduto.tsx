@@ -1,8 +1,15 @@
 import { useState, useEffect } from "react";
 import { Col, Row } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
-import Produto from "../../modelo/produto";
 import Modal from "../../componentes/Modal";
+import { produtoService } from "../../services/produtoService";
+
+type Produto = {
+    produto_id: number;
+    produto_nome: string;
+    produto_preco: number;
+    produto_quantidade: number;
+};
 
 export default function AtualizarProduto() {
     const [produto, setProduto] = useState<Produto | null>(null);
@@ -13,18 +20,25 @@ export default function AtualizarProduto() {
     const [openModalCadastro, setOpenModalCadastro] = useState(false);
     const [openModalMensagem, setOpenModalMensagem] = useState(false);
 
-    useEffect(() => {
-        const pathSegments = window.location.pathname.split('/');
-        const id = pathSegments[pathSegments.length - 1];
-        if (id) {
-            const produtosSalvos = JSON.parse(localStorage.getItem("produtos") || "[]");
-            const foundProduto = produtosSalvos.find((c: { id: number }) => c.id === +id);
+    const fetchProduto = async (id: number) => {
+        try {
+            const foundProduto = await produtoService.getProdutoByID(id)
             if (foundProduto) {
                 setProduto(foundProduto);
-                setNomeState(foundProduto.nome);
-                setValorState(foundProduto.valor);
-                setQuantidadeState(foundProduto.quantidade);
+                setNomeState(foundProduto.produto_nome);
+                setValorState(foundProduto.produto_preco);
+                setQuantidadeState(foundProduto.produto_quantidade);
             }
+        } catch (error) {
+            console.error("Erro ao pegar produto:", error);
+        }
+    }
+
+    useEffect(() => {
+        const pathSegments = window.location.pathname.split('/');
+        const id = Number(pathSegments[pathSegments.length - 1])
+        if (id) {
+            fetchProduto(id)
         }
     }, []);
 
@@ -33,19 +47,18 @@ export default function AtualizarProduto() {
         setOpenModalCadastro(true);
     };
 
-    const confirmaAtualizacao = () => {
-        const produtosSalvos = JSON.parse(localStorage.getItem("produtos") || "[]");
-        if (!produto) return;
-        const updatedProduto = new Produto(
-            produto.id,
-            nomeState || produto.nome,
-            valorState !== 0 ? valorState : produto.valor,
-            quantidadeState !== 0 ? quantidadeState : produto.quantidade
-        );
-        const updatedProdutos = produtosSalvos.map((c: { id: number }) =>
-            (c.id === produto.id ? updatedProduto : c)
-        );
-        localStorage.setItem("produtos", JSON.stringify(updatedProdutos));
+    const confirmaAtualizacao = async () => {
+        const nome = (document.getElementById("inNome") as HTMLInputElement).value;
+        const preco = (document.getElementById("inPreco") as HTMLInputElement).value;
+        const quantidade = (document.getElementById("inQuantidade") as HTMLInputElement).value;
+        const produtoAtualizado = {
+            produto_nome: nome,
+            produto_preco: preco,
+            produto_quantidade: quantidade
+        }
+        if(produto){
+            await produtoService.updateProduto(produto.produto_id, produtoAtualizado)
+        }
         setOpenModalCadastro(false);
         setOpenModalMensagem(true);
     };
@@ -86,9 +99,9 @@ export default function AtualizarProduto() {
                             <input
                                 type="number"
                                 className="form-control"
-                                placeholder="Valor"
-                                aria-label="Valor"
-                                id="inValor"
+                                placeholder="Preco"
+                                aria-label="Preco"
+                                id="inPreco"
                                 onChange={(e) => setValorState(+e.target.value)}
                                 value={valorState}
                             />

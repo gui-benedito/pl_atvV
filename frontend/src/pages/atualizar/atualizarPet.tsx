@@ -1,44 +1,37 @@
 import { useState, useEffect } from "react";
-import Pet from "../../modelo/pet";
 import { Col, Row } from "react-bootstrap";
 import Modal from "../../componentes/Modal";
 import { Navigate } from "react-router-dom";
+import { petService } from "../../services/petService";
+
+type PetType = {
+    pet_id: number
+    pet_nome: string
+    pet_raca: string
+    pet_tipo: string
+    pet_genero: string
+    cliente_id: number
+};
 
 export default function AtualizarPet() {
-    const [pet, setPet] = useState<Pet | null>(null);
-    const [nomeState, setNomeState] = useState("");
-    const [racaState, setRacaState] = useState("");
-    const [tipoState, setTipoState] = useState("");
-    const [generoState, setGeneroState] = useState("");
+    const [pet, setPet] = useState<PetType | null>(null);
     const [redirectToLista, setRedirectToLista] = useState(false);
     const [openModalCadastro, setOpenModalCadastro] = useState(false);
     const [openModalMensagem, setOpenModalMensagem] = useState(false);
 
+    const fetchPet = async (id: number) => {
+        try {
+            const foundPet = await petService.getPetByID(id)
+            setPet(foundPet)
+        } catch (error) {
+            console.error("Error setting pet:", error);
+        }
+    }
+
     useEffect(() => {
         const pathSegments = window.location.pathname.split('/');
-        const tutor = +pathSegments[pathSegments.length - 2];
-        const nome = pathSegments[pathSegments.length - 1];
-        if (tutor && nome) {
-            const clientesSalvos = JSON.parse(localStorage.getItem("clientes") || "[]");
-            let foundPet = null;
-            for (const cliente of clientesSalvos) {
-                if (cliente.id === tutor) {
-                    foundPet = cliente.pets.find((pet: any) => pet.nome === nome);
-                    if (foundPet) {
-                        foundPet = { ...foundPet, tutor: cliente.id };
-                        setPet(foundPet);
-                        setNomeState(foundPet.nome);
-                        setRacaState(foundPet.raca);
-                        setTipoState(foundPet.tipo);
-                        setGeneroState(foundPet.genero);
-                        break;
-                    }
-                }
-            }
-            if (foundPet) {
-                setPet(foundPet);
-            }
-        }
+        const id = Number(pathSegments[pathSegments.length - 1]);
+        fetchPet(id)
     }, []);
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -46,7 +39,21 @@ export default function AtualizarPet() {
         setOpenModalCadastro(true);
     };
 
-    const confirmaAtualizacao = () => {
+    const confirmaAtualizacao = async () => {
+        const nome = (document.getElementById("inNome") as HTMLInputElement).value;
+        const tipo = (document.getElementById("inTipo") as HTMLInputElement).value;
+        const genero = (document.getElementById("inGenero") as HTMLInputElement).value;
+        const raca = (document.getElementById("inRaca") as HTMLInputElement).value;
+        const petAtualizado = {
+            pet_nome: nome,
+            pet_tipo: tipo,
+            pet_raca: raca,
+            pet_genero: genero,
+            cliente_id: pet?.cliente_id
+        }
+        if(pet){
+            await petService.updatePet(pet.pet_id, petAtualizado)
+        }
         setOpenModalCadastro(false);
         setOpenModalMensagem(true);
     };
@@ -78,8 +85,8 @@ export default function AtualizarPet() {
                                 className="form-control"
                                 placeholder="Nome"
                                 aria-label="Nome"
-                                onChange={(e) => setNomeState(e.target.value)}
-                                value={nomeState}
+                                id="inNome"
+                                defaultValue={pet.pet_nome}
                             />
                         </div>
                     </Col>
@@ -90,8 +97,8 @@ export default function AtualizarPet() {
                                 className="form-control"
                                 placeholder="Raça"
                                 aria-label="Raça"
-                                onChange={(e) => setRacaState(e.target.value)}
-                                value={racaState}
+                                id="inRaca"
+                                defaultValue={pet.pet_raca}
                             />
                         </div>
                     </Col>
@@ -104,8 +111,8 @@ export default function AtualizarPet() {
                                 className="form-control"
                                 placeholder="Gênero"
                                 aria-label="Gênero"
-                                onChange={(e) => setGeneroState(e.target.value)}
-                                value={generoState}
+                                id="inGenero"
+                                defaultValue={pet.pet_genero}
                             />
                         </div>
                     </Col>
@@ -116,8 +123,8 @@ export default function AtualizarPet() {
                                 className="form-control"
                                 placeholder="Tipo"
                                 aria-label="Tipo"
-                                onChange={(e) => setTipoState(e.target.value)}
-                                value={tipoState}
+                                id="inTipo"
+                                defaultValue={pet.pet_tipo}
                             />
                         </div>
                     </Col>

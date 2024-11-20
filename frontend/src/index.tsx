@@ -48,7 +48,7 @@ root.render(
           <Route path="pet" element={<Pet />}>
             <Route index element={<ListaPet/>} />
             <Route path="cadastro" element={<FormularioCadastroPet />} />
-            <Route path="atualizar/:id/:nome" element={<AtualizarPet />} />
+            <Route path="atualizar/:id" element={<AtualizarPet />} />
           </Route>
           <Route path="produto" element={<Produto />}>
             <Route index element={<ListaProduto/>} />

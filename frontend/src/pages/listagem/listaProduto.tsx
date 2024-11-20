@@ -2,12 +2,13 @@ import { useState, useEffect } from "react";
 import ProdutoCard from "./podutoCard";
 import imgSemProduto from "../../images/produto-vazio.webp";
 import Modal from "../../componentes/Modal";
+import { produtoService } from "../../services/produtoService";
 
 type Produto = {
-    id: number;
-    nome: string;
-    valor: number;
-    quantidade: number;
+    produto_id: number;
+    produto_nome: string;
+    produto_preco: number;
+    produto_quantidade: number;
 };
 
 export default function ListaProduto() {
@@ -16,9 +17,17 @@ export default function ListaProduto() {
     const [openModalExcluir, setOpenModalExcluir] = useState(false);
     const [openModalMensagem, setOpenModalMensagem] = useState(false);
 
+    const fetchProdutos = async() => {
+        try {
+            const storedProdutos = await produtoService.getAllProduto()
+            setProdutos(storedProdutos);
+        } catch (error) {
+            console.error("Erro ao pegar produtos:", error);
+        }
+    }
+
     useEffect(() => {
-        const storedProdutos = JSON.parse(localStorage.getItem("produtos") || "[]");
-        setProdutos(storedProdutos);
+        fetchProdutos()
     }, []);
 
     const closeModalExcluir = () => setOpenModalExcluir(false);
@@ -30,11 +39,10 @@ export default function ListaProduto() {
 
     const closeModalMensagem = () => setOpenModalMensagem(false);
 
-    const confirmaExcluir = () => {
+    const confirmaExcluir = async () => {
         if (produtoIdParaExcluir !== null) {
-            const updatedProdutos = produtos.filter((produto) => produto.id !== produtoIdParaExcluir);
-            localStorage.setItem("produtos", JSON.stringify(updatedProdutos));
-            setProdutos(updatedProdutos);
+            await produtoService.deleteProduto(produtoIdParaExcluir)
+            fetchProdutos()
             setOpenModalExcluir(false);
             setProdutoIdParaExcluir(null);
             setOpenModalMensagem(true);
@@ -56,12 +64,12 @@ export default function ListaProduto() {
                 ) : (
                     produtos.map((produto) => (
                         <ProdutoCard
-                            key={produto.id}
-                            id={produto.id}
-                            nome={produto.nome}
-                            valor={produto.valor}
-                            quantidade={produto.quantidade}
-                            onExcluir={() => openModalConfirmaExcluir(produto.id)}
+                            key={produto.produto_id}
+                            produto_id={produto.produto_id}
+                            produto_nome={produto.produto_nome}
+                            produto_preco={produto.produto_preco}
+                            produto_quantidade={produto.produto_quantidade}
+                            onExcluir={() => openModalConfirmaExcluir(produto.produto_id)}
                         />
                     ))
                 )}

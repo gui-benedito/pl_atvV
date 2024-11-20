@@ -1,14 +1,29 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Col, Form, Row } from "react-bootstrap";
 import '../css/style.css';
 import Pet from "../../modelo/pet";
 import Modal from "../../componentes/Modal";
 import { Navigate } from "react-router-dom";
+import { clienteService } from "../../services/clienteService";
+import { petService } from "../../services/petService";
 
 interface Cliente {
-    id: number;
-    nome: string;
+    cliente_id: number;
+    cliente_nome: string;
 }
+
+type ClienteType = {
+    cliente_id: number;
+    cliente_nome: string;
+    cliente_nomeSocial: string;
+    cliente_cpf: string
+    emissao_cpf: string
+    cliente_rg: string
+    emissao_rg: string
+    cliente_telefone: string;
+    cliente_email: string;
+    pets: Pet[];
+};
 
 export default function FormularioCadastroPet() {
     const [nomeState, setNomeState] = useState("");
@@ -20,6 +35,20 @@ export default function FormularioCadastroPet() {
     const [openModalCadastro, setOpenModalCadastro] = useState(false);
     const [openModalMensagem, setOpenModalMensagem] = useState(false);
     const [racas, setRacas] = useState<string[]>([]);
+    const [clientes, setClientes] = useState<ClienteType[]>([])
+
+    const fetchClientes = async () => {
+        try {
+            const clientesData = await clienteService.getAllClientes();
+            setClientes(clientesData);
+        } catch (error) {
+            console.error("Error setting clientes:", error);
+        }
+    }
+
+    useEffect(() => {
+        fetchClientes()
+    }, []);
 
     const handleNome = (nome: string) => setNomeState(nome);
     const handleGenero = (genero: string) => setGeneroState(genero);
@@ -45,15 +74,15 @@ export default function FormularioCadastroPet() {
     };
 
     const confirmaCadastro = () => {
-        const clientesSalvos = JSON.parse(localStorage.getItem('clientes') || '[]');
-        const newPet = new Pet(nomeState, racaState, generoState, tipoState);
-        for (const cliente of clientesSalvos) {
-            if (cliente.id === tutorState) {
-                cliente.pets = cliente.pets || [];
-                cliente.pets.push(newPet);
-            }
+        const newPet = {
+            pet_nome: nomeState,
+            pet_tipo: tipoState,
+            pet_raca: racaState,
+            pet_genero: generoState,
+            cliente_id: +tutorState
         }
-        localStorage.setItem('clientes', JSON.stringify(clientesSalvos));
+        console.log(newPet)
+        petService.savePet(newPet)
         setOpenModalCadastro(false);
         setOpenModalMensagem(true);
     };
@@ -66,10 +95,6 @@ export default function FormularioCadastroPet() {
         return <Navigate to="/pet" />;
     }
 
-    const clientes = JSON.parse(localStorage.getItem('clientes') || '[]').map((c: Cliente) => ({
-        id: +c.id,
-        nome: c.nome
-    }));
 
     return (
         <>
@@ -126,8 +151,8 @@ export default function FormularioCadastroPet() {
                 <Form.Select aria-label="Selecione o Tutor" className="tutor-select" onChange={handleTutor}>
                     <option value={0}>Selecione o tutor</option>
                     {clientes.map((c: Cliente) => (
-                        <option value={c.id} key={c.id}>
-                            {c.nome}
+                        <option value={c.cliente_id} key={c.cliente_id}>
+                            {c.cliente_nome}
                         </option>
                     ))}
                 </Form.Select>

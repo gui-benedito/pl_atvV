@@ -3,26 +3,44 @@ import PetCard from "./petCard";
 import imgSemCliente from "../../images/lista-vazia.jpg";
 import Modal from "../../componentes/Modal";
 import { petService } from "../../services/petService";
+import { clienteService } from "../../services/clienteService";
+
+type ClienteType = {
+    cliente_id: number;
+    cliente_nome: string;
+    cliente_nomeSocial: string;
+    cliente_cpf: string
+    emissao_cpf: string
+    cliente_rg: string
+    emissao_rg: string
+    cliente_telefone: string;
+    cliente_email: string;
+    // pets: Pet[];
+};
 
 type PetType = {
-    pet_nome: string;
-    pet_raca: string;
-    pet_tipo: string;
-    pet_genero: string;
+    pet_id: number
+    pet_nome: string
+    pet_raca: string
+    pet_tipo: string
+    pet_genero: string
     cliente_id: number
 };
 
 export default function ListaPet() {
-    const [pets, setPets] = useState<PetType[]>([]);
-    const [openModalExcluir, setOpenModalExcluir] = useState(false);
-    const [openModalMensagem, setOpenModalMensagem] = useState(false);
-    const [tutorId, setTutorId] = useState<number | null>(null);
-    const [petNome, setPetNome] = useState<string>("");
+    const [pets, setPets] = useState<PetType[]>([])
+    const [openModalExcluir, setOpenModalExcluir] = useState(false)
+    const [openModalMensagem, setOpenModalMensagem] = useState(false)
+    const [petId, setPetId] = useState<number | null>(null)
+    const [petNome, setPetNome] = useState<string>("")
+    const [clientes, setClientes] = useState<ClienteType[]>([])
 
     const fetchPets = async () => {
         try {
             const pets = await petService.getAllPets()
             setPets(pets)
+            const allClientes = await clienteService.getAllClientes()
+            setClientes(allClientes)
         } catch (error) {
             console.error("Erro ao pegar pets:", error);
         }
@@ -36,27 +54,19 @@ export default function ListaPet() {
 
     const closeModalExcluir = () => setOpenModalExcluir(false);
 
-    const openModalConfirmaExcluir = (tutorId: number, petNome: string) => {
-        setTutorId(tutorId);
+    const openModalConfirmaExcluir = (pet_id: number) => {
+        setPetId(pet_id)
         setPetNome(petNome);
         setOpenModalExcluir(true);
     };
 
-    const confirmaExcluir = () => {
-        if (tutorId !== null && petNome) {
-            const clientes = JSON.parse(localStorage.getItem("clientes") || "[]");
-            const cliente = clientes.find((c: any) => c.id === tutorId);
-            if (cliente) {
-                const petIndex = cliente.pets.findIndex((p: any) => p.nome === petNome);
-                if (petIndex !== -1) {
-                    cliente.pets.splice(petIndex, 1);
-                    localStorage.setItem("clientes", JSON.stringify(clientes));
-                    fetchPets()
-                    setOpenModalExcluir(false);
-                    setOpenModalMensagem(true);
-                }
-            }
+    const confirmaExcluir = async () => {
+        if(petId){
+            await petService.deletePet(petId)
         }
+        fetchPets()
+        setOpenModalExcluir(false);
+        setOpenModalMensagem(true);
     };
 
     return (
@@ -74,12 +84,16 @@ export default function ListaPet() {
                 pets.map((p) => (
                     <PetCard
                         key={`${p.cliente_id}-${p.pet_nome}`}
-                        nome={p.pet_nome}
-                        genero={p.pet_genero}
-                        tipo={p.pet_tipo}
-                        raca={p.pet_raca}
-                        tutorId={p.cliente_id}
-                        onExcluir={() => openModalConfirmaExcluir(p.cliente_id, p.pet_nome)} tutorNome={""}                    />
+                        pet_nome={p.pet_nome}
+                        pet_genero={p.pet_genero}
+                        pet_tipo={p.pet_tipo}
+                        pet_raca={p.pet_raca}
+                        onExcluir={() => openModalConfirmaExcluir(p.pet_id)} 
+                        tutorNome={
+                            clientes.find((c) => c.cliente_id === p.cliente_id)?.cliente_nomeSocial || ""
+                        }
+                        pet_id={p.pet_id}                    
+                    />
                 ))
             )}
 

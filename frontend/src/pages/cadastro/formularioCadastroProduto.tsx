@@ -3,6 +3,7 @@ import { Col, Row } from "react-bootstrap";
 import { Navigate } from "react-router-dom";
 import Modal from "../../componentes/Modal";
 import Produto from "../../modelo/produto";
+import { produtoService } from "../../services/produtoService";
 
 export default function FormularioCadastroProduto() {
     const [nomeState, setNomeState] = useState("");
@@ -24,12 +25,13 @@ export default function FormularioCadastroProduto() {
         setOpenModalCadastro(true);
     };
 
-    const confirmaCadastro = () => {
-        const produtos = JSON.parse(localStorage.getItem("produtos") || "[]");
-        const id = produtos.length > 0 ? produtos[produtos.length - 1].id + 1 : 1;
-        const newProduto = new Produto(id, nomeState, valorState, quantidadeState);
-        produtos.push(newProduto);
-        localStorage.setItem("produtos", JSON.stringify(produtos));
+    const confirmaCadastro = async () => {
+        const newProduto = {
+            produto_nome: nomeState,
+            produto_preco: valorState,
+            produto_quantidade: quantidadeState
+        }
+        await produtoService.saveProduto(newProduto)
         setOpenModalCadastro(false);
         setOpenModalMensagem(true);
     };
