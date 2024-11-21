@@ -1,5 +1,6 @@
 import { Pet } from "../models/Pet";
 import { Cliente } from "../models/Cliente"
+import { Compra } from "../models/Compra";
 
 export const clienteController = {
     save: async (req, res) => {
@@ -38,7 +39,7 @@ export const clienteController = {
     show: async (req, res) => {
         try {
             const clientes = await Cliente.findAll({
-                include: Pet
+                include: [Pet, Compra]
             })
     
             if(!clientes){
@@ -55,7 +56,9 @@ export const clienteController = {
     showByID: async (req, res) => {
         try {
             const { id } = req.params
-            const cliente = await Cliente.findByPk(+id)
+            const cliente = await Cliente.findByPk(+id, {
+                include: [Pet, Compra]
+            })
     
             if(!cliente){
                 return res.status(400).json({ error: 'Erro ao buscar usuário' })

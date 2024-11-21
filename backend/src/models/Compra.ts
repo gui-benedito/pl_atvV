@@ -1,4 +1,4 @@
-import { Table, Column, Model, DataType, HasMany, PrimaryKey, AutoIncrement, ForeignKey, } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, HasMany, PrimaryKey, AutoIncrement, ForeignKey, BelongsTo, } from 'sequelize-typescript';
 import Produto from './Produto';
 import Servico from './Servico';
 import { Cliente } from './Cliente';
@@ -56,4 +56,7 @@ export class Compra extends Model{
         allowNull: false
     })
     valor!: number
+
+    @BelongsTo(() => Cliente)
+    Cliente!: Cliente
 }

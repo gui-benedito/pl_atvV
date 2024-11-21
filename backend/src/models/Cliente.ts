@@ -1,5 +1,6 @@
 import { Table, Column, Model, DataType, HasMany, PrimaryKey, AutoIncrement, } from 'sequelize-typescript';
 import { Pet } from './Pet';
+import { Compra } from './Compra';
   
   @Table({
     tableName: 'Cliente',
@@ -63,5 +64,8 @@ import { Pet } from './Pet';
   
     @HasMany(() => Pet)
     pets!: Pet[];
+
+    @HasMany(() => Compra)
+    compras!: Compra[]
   }
   

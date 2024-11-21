@@ -18,7 +18,7 @@ type Cliente = {
     emissao_rg: string
     cliente_telefone: string;
     cliente_email: string;
-    // pets: Pet[];
+    pets: Pet[];
 };
 
 type Produto = {
@@ -201,9 +201,9 @@ export default function Venda() {
                     <Col>
                         <Form.Select aria-label="Selecione o tutor" className="tutor-select" onChange={(e) => handlePet(+e.target.value)}>
                             <option value={0}>Selecione o pet</option>
-                            {pets.map((s: Pet) => (
-                                <option value={s.pet_id} key={s.pet_id}>
-                                    {s.pet_nome}
+                            {clienteSelecionado?.pets.map((p: Pet) => (
+                                <option value={p.pet_id} key={p.pet_id}>
+                                    {p.pet_nome}
                                 </option>
                             ))}
                         </Form.Select>

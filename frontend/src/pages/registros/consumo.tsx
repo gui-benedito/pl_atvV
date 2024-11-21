@@ -1,37 +1,65 @@
 import { useEffect, useState } from "react";
 import ConsumoCard from "./consumoCard";
 import '../css/style.css';
+import Pet from "../../modelo/pet";
+import { clienteService } from "../../services/clienteService";
+import { produtoService } from "../../services/produtoService";
 
-type ClienteType = {
-    id: number;
-    nome: string;
-    nomeSocial: string;
-    cpf: {
-        valor: string;
-        dataEmissao: string;
-    };
-    rg: {
-        valor: string;
-        dataEmissao: string;
-    };
-    telefones: [
-        {
-            ddd: string;
-            numero: string;
-        }
-    ];
-    email: string;
-    pets: [];
-    produtosConsumidos: [];
-    servicosConsumidos: [];
+type Compra = {
+    compra_id: number
+    produto_id: number | null
+    servico_id: number | null
+    cliente_id: number
+    pet_id: number | null
+    quantidade: number
+    valor: number
+}
+
+type Cliente = {
+    cliente_id: number;
+    cliente_nome: string;
+    cliente_nomeSocial: string;
+    cliente_cpf: string
+    emissao_cpf: string
+    cliente_rg: string
+    emissao_rg: string
+    cliente_telefone: string;
+    cliente_email: string;
+    pets: Pet[];
+    compras: Compra[]
 };
 
+type Produto = {
+    produto_id: number
+    produto_nome: string
+    produto_preco: number
+}
+
 export default function Consumo() {
-    const [clientes, setClientes] = useState<ClienteType[]>([]);
+    const [clientes, setClientes] = useState<Cliente[]>([]);
+    const [produtos, setProdutos] = useState<Produto[]>([])
+
+    const fetchClientes = async () => {
+        try {
+            const clientes = await clienteService.getAllClientes()
+            setClientes(clientes)
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const fetchProdutos = async() => {
+        try {
+            const storedProdutos = await produtoService.getAllProduto()
+            setProdutos(storedProdutos);
+        } catch (error) {
+            console.error("Erro ao pegar produtos:", error);
+        }
+    }
 
     useEffect(() => {
-        const clientesData = JSON.parse(localStorage.getItem("clientes") || "[]");
-        setClientes(Array.isArray(clientesData) ? clientesData : []);
+        fetchClientes()
+        fetchProdutos()
     }, []);
 
     return (
@@ -44,11 +72,10 @@ export default function Consumo() {
                 ) : (
                     clientes.map((cliente) => (
                         <ConsumoCard
-                            key={cliente.id}
-                            id={cliente.id}
-                            nome={cliente.nome}
-                            produtosConsumidos={cliente.produtosConsumidos}
-                            servicosConsumidos={cliente.servicosConsumidos}
+                            key={cliente.cliente_id}
+                            id={cliente.cliente_id}
+                            nome={cliente.cliente_nome} 
+                            compras={cliente.compras}                       
                         />
                     ))
                 )}
