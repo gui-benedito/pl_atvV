@@ -41,9 +41,11 @@
     align-items: center;
 }
 
-.card-column {
+.card-column, .card-column-consumo {
     flex: 1;
     margin-right: 1em;
+}
+.card-column-consumo {
     display: flex;
     justify-content: space-between;
 }

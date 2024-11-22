@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Cliente from "../../modelo/cliente";
 import { Card } from "react-bootstrap";
 import '../css/style.css';
+import { registrosService } from "../../services/registrosService";
 
 type ClienteSortedItem = {
     nome: string;
@@ -9,48 +10,30 @@ type ClienteSortedItem = {
 };
 
 export default function MaisConsumidos() {
-    const [clientes] = useState<Cliente[]>(JSON.parse(localStorage.getItem('clientes') || '[]'));
-    const [clientesFiltered, setClientesFiltered] = useState<ClienteSortedItem[]>([]);
-    const [cabecalho, setCabecalho] = useState<string | null>(null);
+    const [clientes, setClientes] = useState([])
+    const [clientesFiltered, setClientesFiltered] = useState([])
+    const [cabecalho, setCabecalho] = useState('')
+
+    const fetchClientes = async () => {
+        try {
+            const listaClientes = await registrosService.getTopDez()
+            await setClientes(listaClientes)
+        } catch (error) {
+            throw error
+        }
+    }
+
+    useEffect(() => {
+        fetchClientes()
+    }, [clientesFiltered]);
 
     const dezProdutosMaisConsumidos = () => {
-        if (!clientes.length) {
-            setCabecalho('Sem produtos consumidos');
-            return;
-        }
-        setCabecalho('Clientes que mais consumiram por produto');
-        const maisConsumiram = clientes.map(cliente => ({
-            nome: cliente.nome,
-            qtd: cliente.produtosConsumidos.length
-        }));
         
-        const dezMais = maisConsumiram
-            .filter(c => c.qtd > 0)
-            .sort((a, b) => b.qtd - a.qtd)
-            .slice(0, 10);
-
-        setCabecalho(dezMais.length ? 'Clientes que mais consumiram por produto' : 'Sem produtos consumidos');
-        setClientesFiltered(dezMais);
-    };
+    }
 
     const dezServicosMaisConsumidos = () => {
-        if (!clientes.length) {
-            setCabecalho('Sem serviços consumidos');
-            return;
-        }
-        const maisConsumiram = clientes.map(cliente => ({
-            nome: cliente.nome,
-            qtd: cliente.servicosConsumidos.length
-        }));
-        
-        const dezMais = maisConsumiram
-            .filter(c => c.qtd > 0)
-            .sort((a, b) => b.qtd - a.qtd)
-            .slice(0, 10);
 
-        setCabecalho(dezMais.length ? 'Clientes que mais consumiram por serviço' : 'Sem serviços consumidos');
-        setClientesFiltered(dezMais);
-    };
+    }
 
     return (
         <>
@@ -65,10 +48,10 @@ export default function MaisConsumidos() {
                         <Card key={index} className="card-main">
                             <Card.Body>
                                 <div className="card-column">
-                                    <span><strong>Nome: </strong>{c.nome}</span>
+                                    {/* <span><strong>Nome: </strong>{c.nome}</span> */}
                                 </div>
                                 <div className="card-column">
-                                    <span><strong>Quantidade: </strong>{c.qtd}</span>
+                                    {/* <span><strong>Quantidade: </strong>{c.qtd}</span> */}
                                 </div>
                             </Card.Body>
                         </Card>

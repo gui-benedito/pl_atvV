@@ -51,7 +51,65 @@ export const registroController = {
         }
     },
 
-    getMaisConsumiram: async (req, res) => {
-        
+    getTopDez: async (req, res) => {
+        try {
+            const clientes = await Cliente.findAll({
+                include: [
+                    {
+                        model: Compra,
+                        include: [
+                            {
+                                model: Produto,
+                                attributes: ['produto_nome', 'produto_preco'],
+                            },
+                            {
+                                model: Servico,
+                                attributes: ['servico_nome', 'servico_preco'],
+                            },
+                        ],
+                    }
+                ],
+            })
+
+            const listaProduto = {};
+
+            const listaServico = {};
+
+            clientes.forEach((c) => {
+                if(c.compras.length > 0){
+                    c.compras.forEach((co) => {
+                        if(co.produto){
+                            if(!listaProduto[c.cliente_nome]){
+                                listaProduto[c.cliente_nome] = 0
+                            }
+                            listaProduto[c.cliente_nome] += co.quantidade
+                        }
+                        if(co.servico){
+                            if(!listaServico[c.cliente_nome]){
+                                listaServico[c.cliente_nome] = 0
+                            }
+                            listaServico[c.cliente_nome] += 1
+                        }
+                    })
+                }
+            })
+
+            const produtoOrdenado = Object.fromEntries(
+                Object.entries(listaProduto).sort((a, b) => {
+                    return (b[1] as number) - (a[1] as number);
+                }).slice(0, 10)
+            )
+            
+            const servicoOrdenado = Object.fromEntries(
+                Object.entries(listaServico).sort((a, b) => {
+                    return (b[1] as number) - (a[1] as number);
+                }).slice(0, 10)
+            )
+
+            return res.status(200).json({produtoOrdenado, servicoOrdenado})
+        } catch (error) {
+            console.error('Erro ao buscar cliente:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
     }
 }

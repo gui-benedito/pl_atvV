@@ -40,7 +40,7 @@ export default function ConsumoCard({ id, nome, compras }: Props) {
         <Card key={id} className="card-main">
             <Card.Body>
                 <div className="card-item">
-                    <div className="card-column">
+                    <div className="card-column-consumo">
                         <span><strong>Nome:</strong> {nome}</span>
                         <span><strong>Total Gasto:</strong> R$ {valorTotal.toFixed(2)}</span>
                     </div>
