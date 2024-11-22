@@ -57,6 +57,15 @@ export class Compra extends Model{
     })
     valor!: number
 
+    @BelongsTo(() => Produto)
+    produto!: Produto;
+
+    @BelongsTo(() => Servico)
+    servico!: Servico;
+
     @BelongsTo(() => Cliente)
-    Cliente!: Cliente
+    cliente!: Cliente;
+
+    @BelongsTo(() => Pet)
+    pet!: Pet;
 }

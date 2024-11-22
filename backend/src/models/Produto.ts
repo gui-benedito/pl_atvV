@@ -1,4 +1,5 @@
 import { Table, Column, Model, DataType, BelongsToMany, HasMany, PrimaryKey, AutoIncrement, ForeignKey, BelongsTo } from 'sequelize-typescript'
+import { Compra } from './Compra'
 
 @Table({
     tableName: 'Produto',
@@ -30,4 +31,7 @@ export default class Produto extends Model {
         allowNull: false
     })
     produto_quantidade!: number
+
+    @HasMany(() => Compra)
+    compras!: Compra[];
 }

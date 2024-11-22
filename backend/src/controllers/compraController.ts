@@ -38,8 +38,18 @@ export const compraController= {
 
     show: async (req, res) => {
         const compras = await Compra.findAll({
-            include: Cliente
+            include: [
+                {
+                    model: Produto,
+                    attributes: ['produto_id', 'produto_nome', 'produto_preco'],
+                },
+                {
+                    model: Servico,
+                    attributes: ['servico_id', 'servico_nome', 'servico_preco'],
+                },
+            ],
         })
+        
         if(!compras){
             res.status(400).json({error: 'Erro ao encontrar compras'})
         }

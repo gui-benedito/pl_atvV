@@ -1,6 +1,8 @@
 import { Pet } from "../models/Pet";
 import { Cliente } from "../models/Cliente"
 import { Compra } from "../models/Compra";
+import Produto from "../models/Produto";
+import Servico from "../models/Servico";
 
 export const clienteController = {
     save: async (req, res) => {
@@ -39,7 +41,24 @@ export const clienteController = {
     show: async (req, res) => {
         try {
             const clientes = await Cliente.findAll({
-                include: [Pet, Compra]
+                include: [
+                    {
+                        model: Compra,
+                        include: [
+                            {
+                                model: Produto,
+                                attributes: ['produto_nome', 'produto_preco'],
+                            },
+                            {
+                                model: Servico,
+                                attributes: ['servico_nome', 'servico_preco'],
+                            },
+                        ],
+                    },
+                    {
+                        model: Pet,
+                    },
+                ],
             })
     
             if(!clientes){
