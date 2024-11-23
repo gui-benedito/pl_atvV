@@ -1,5 +1,6 @@
 import { Cliente } from "../models/Cliente";
 import { Compra } from "../models/Compra";
+import { Pet } from "../models/Pet";
 import Produto from "../models/Produto";
 import Servico from "../models/Servico";
 
@@ -171,6 +172,73 @@ export const registroController = {
             return res.status(200).json({produtoOrdenado, servicoOrdenado})
         } catch (error) {
             console.error('Erro ao buscar cliente:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
+    },
+
+    consumoTipoRaca: async (req, res) => {
+        try {
+            const pets = await Pet.findAll({
+                include: [
+                    {
+                        model: Compra,
+                        include: [
+                            {
+                                model: Produto,
+                                attributes: ['produto_nome', 'produto_preco'],
+                            },
+                            {
+                                model: Servico,
+                                attributes: ['servico_nome', 'servico_preco'],
+                            },
+                        ],
+                    },
+                    {
+                        model: Cliente,
+                    },
+                ]
+            })
+
+            const lista = {produto: {}, servico: {}}
+            pets.forEach((p) => {
+                if(p.compras.length > 0){
+                    p.compras.forEach((co) => {
+                        if(co.produto){
+                            if(!lista['produto'][p.pet_tipo]){
+                                lista['produto'][p.pet_tipo] = {}
+                            }
+        
+                            if(!lista['produto'][p.pet_tipo][p.pet_raca]){
+                                lista['produto'][p.pet_tipo][p.pet_raca] = {}
+                            }
+
+                            if(!lista['produto'][p.pet_tipo][p.pet_raca][co.produto.produto_nome]){
+                                lista['produto'][p.pet_tipo][p.pet_raca][co.produto.produto_nome] = 0
+                            }
+                            lista['produto'][p.pet_tipo][p.pet_raca][co.produto.produto_nome] += co.quantidade
+                        }
+
+                        if(co.servico){
+                            if(!lista['servico'][p.pet_tipo]){
+                                lista['servico'][p.pet_tipo] = {}
+                            }
+        
+                            if(!lista['servico'][p.pet_tipo][p.pet_raca]){
+                                lista['servico'][p.pet_tipo][p.pet_raca] = {}
+                            }
+
+                            if(!lista['servico'][p.pet_tipo][p.pet_raca][co.servico.servico_nome]){
+                                lista['servico'][p.pet_tipo][p.pet_raca][co.servico.servico_nome] = 0
+                            }
+                            lista['servico'][p.pet_tipo][p.pet_raca][co.servico.servico_nome] += 1
+                        }
+                    })
+                }
+            })
+
+            return res.status(200).json(lista)
+        } catch (error) {
+            console.error('Erro ao buscar pets:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
     }

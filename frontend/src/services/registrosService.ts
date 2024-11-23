@@ -9,6 +9,7 @@ export const registrosService = {
             throw error
         }
     },
+
     getTopDez: async () => {
         try {
             const response = await fetch('http://localhost:5000/registros/topDez')
@@ -19,9 +20,21 @@ export const registrosService = {
             throw error
         }
     },
+
     getConsumoGeral : async () => {
         try {
             const response = await fetch('http://localhost:5000/registros/consumoGeral')
+            const registro = await response.json()
+            return registro
+        } catch (error) {
+            console.log(error)
+            throw error
+        }
+    },
+
+    getPetRaca: async () => {
+        try {
+            const response = await fetch('http://localhost:5000/registros/consumoTipoRaca')
             const registro = await response.json()
             return registro
         } catch (error) {

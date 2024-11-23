@@ -2,23 +2,33 @@ import { useState, useEffect } from "react";
 import Cliente from "../../modelo/cliente";
 import { Card, Col, Row, Form } from "react-bootstrap";
 import '../css/style.css';
+import { registrosService } from "../../services/registrosService";
 
-type FilteredItem = {
-    name: string;
-    total: number;
-};
+type ClienteOrdenado = Record<string, number>;
 
 export default function ConsumidosPorPet() {
     const [clientes, setClientes] = useState<Cliente[]>([]);
-    const [filtered, setFiltered] = useState<FilteredItem[]>([]);
+    const [filtered, setFiltered] = useState<ClienteOrdenado[]>([]);
     const [cabecalho, setCabecalho] = useState<string | null>(null);
     const [tipo, setTipo] = useState("");
     const [raca, setRaca] = useState("");
     const [racasDisponiveis, setRacasDisponiveis] = useState<string[]>([]);
+    const [cachorros, setCachorros] = useState<ClienteOrdenado[]>([])
+    const [gatos, setGatos] = useState<ClienteOrdenado[]>([])
+    const [error, setError] = useState<string | null>(null);
+
+    const fetchPets = async () => {
+        try {
+            const { Gato, Cachorro } = await registrosService.getPetRaca()
+            setCachorros(Cachorro)
+            setCachorros(Gato)
+        } catch (error) {
+            setError("Erro ao buscar dados. Tente novamente mais tarde.");
+        }
+    }
 
     useEffect(() => {
-        const clientesData = JSON.parse(localStorage.getItem("clientes") || "[]");
-        setClientes(Array.isArray(clientesData) ? clientesData : []);
+        fetchPets()
     }, []);
 
     const handleTipoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -33,44 +43,12 @@ export default function ConsumidosPorPet() {
     };
 
     const handleRacaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setRaca(e.target.value);
+        setRaca(e.target.value)
     };
 
-    const filtrarConsumidos = (tipoFiltro: "produto" | "servico") => {
-        const clientesFiltrados = clientes.filter(cliente =>
-            cliente.pets.some((pet: any) =>
-                (tipo ? pet.tipo === tipo : true) && (raca ? pet.raca === raca : true)
-            )
-        );
-
-        if (clientesFiltrados.length === 0) {
-            setFiltered([]);
-            setCabecalho(`Sem ${tipoFiltro === "produto" ? "produtos" : "serviços"} para ${
-                tipo && raca ? `${tipo} e ${raca}` : tipo ? tipo : raca ? raca : "nenhum filtro selecionado"
-            }`);
-            return;
-        }
-
-        let lista: { [key: string]: { valor: number, count: number } } = {};
-        setCabecalho(`${tipoFiltro === "produto" ? "Produtos" : "Serviços"} mais consumidos`);
-
-        clientesFiltrados.forEach(cliente => {
-            const consumidos = tipoFiltro === "produto" ? cliente.produtosConsumidos : cliente.servicosConsumidos;
-            consumidos.forEach((item: any) => {
-                if (lista[item.nome]) {
-                    lista[item.nome].count += 1;
-                } else {
-                    lista[item.nome] = { valor: item.valor, count: 1 };
-                }
-            });
-        });
-
-        const listaArray = Object.entries(lista)
-            .map(([name, { valor, count }]) => ({ name, total: valor * count }))
-            .sort((a, b) => b.total - a.total);
-
-        setFiltered(listaArray);
-    };
+    const filtrarConsumidos = (tipo: string) => {
+        return 
+    }
 
     return (
         <div className="container-fluid valor-filtro">
@@ -106,7 +84,7 @@ export default function ConsumidosPorPet() {
                                     <span><strong>Nome: </strong>{c.name}</span>
                                 </div>
                                 <div className="card-column">
-                                    <span><strong>Valor Total: </strong>{c.total.toFixed(2)}</span>
+                                    <span><strong>Quantidade: </strong>{c.total}</span>
                                 </div>
                             </Card.Body>
                         </Card>
