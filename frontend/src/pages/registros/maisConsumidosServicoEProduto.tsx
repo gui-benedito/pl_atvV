@@ -1,79 +1,71 @@
-import { useState } from "react";
-import Cliente from "../../modelo/cliente";
+import { useEffect, useState } from "react";
 import { Card } from "react-bootstrap";
 import '../css/style.css';
+import { registrosService } from "../../services/registrosService";
 
-type FilteredItem = {
-    name: string;
-    qtd: number;
-};
+type ClienteOrdenado = Record<string, number>;
 
 export default function MaisConsumidosServicoEProduto() {
-    const [clientes] = useState<Cliente[]>(JSON.parse(localStorage.getItem('clientes') || '[]'));
-    const [filtered, setFiltered] = useState<FilteredItem[]>([]);
-    const [cabecalho, setCabecalho] = useState<string | null>(null);
+    const [produtoOrdenado, setProdutoOrdenado] = useState<ClienteOrdenado>({});
+    const [servicoOrdenado, setServicoOrdenado] = useState<ClienteOrdenado>({});
+    const [filtered, setFiltered] = useState<ClienteOrdenado>({});
+    const [cabecalho, setCabecalho] = useState("");
+    const [error, setError] = useState<string | null>(null);
 
-    const produtosMaisConsumidos = () => {
-        if (!clientes || clientes.length === 0) return;
-        let lista: { [key: string]: number } = {};
-        setCabecalho('Produtos mais consumidos');
-        
-        clientes.forEach((cliente) => {
-            cliente.produtosConsumidos.forEach((p) => {
-                lista[p.nome] = (lista[p.nome] || 0) + 1;
-            });
-        });
-
-        const listaArray = Object.entries(lista)
-            .filter(([name, qtd]) => qtd > 0)
-            .map(([name, qtd]) => ({ name, qtd }))
-            .sort((a, b) => b.qtd - a.qtd);
-
-        setCabecalho(listaArray.length ? 'Produtos mais consumidos' : 'Sem produtos consumidos');
-        setFiltered(listaArray);
+    const fetchClientes = async () => {
+        try {
+            const { produtoOrdenado, servicoOrdenado } = await registrosService.getConsumoGeral();
+            setProdutoOrdenado(produtoOrdenado);
+            setServicoOrdenado(servicoOrdenado);
+        } catch (error) {
+            setError("Erro ao buscar dados. Tente novamente mais tarde.");
+        }
     };
 
-    const servicosMaisConsumidos = () => {
-        if (!clientes || clientes.length === 0) return;
-        let lista: { [key: string]: number } = {};
+    useEffect(() => {
+        fetchClientes();
+    }, []);
 
-        clientes.forEach((cliente) => {
-            cliente.servicosConsumidos.forEach((s) => {
-                lista[s.nome] = (lista[s.nome] || 0) + 1;
-            });
-        });
-
-        const listaArray = Object.entries(lista)
-            .filter(([name, qtd]) => qtd > 0)
-            .map(([name, qtd]) => ({ name, qtd }))
-            .sort((a, b) => b.qtd - a.qtd);
-
-        setCabecalho(listaArray.length ? 'Serviços mais consumidos' : 'Sem serviços consumidos');
-        setFiltered(listaArray);
+    const filtrarClientes = (tipo: "produto" | "servico") => {
+        if (tipo === "produto") {
+            setFiltered(produtoOrdenado);
+            setCabecalho("Produtos");
+        } else {
+            setFiltered(servicoOrdenado);
+            setCabecalho("Serviços");
+        }
     };
-
     return (
         <>
             <div className="btn-filtro">
-                <button onClick={produtosMaisConsumidos} className="header-btn">Produto</button>
-                <button onClick={servicosMaisConsumidos} className="header-btn">Serviço</button>
+                <button onClick={() => filtrarClientes("produto")} className="header-btn">Produto</button>
+                <button onClick={() => filtrarClientes("servico")} className="header-btn">Serviço</button>
             </div>
             <div className="Card-container container-registro">
-                {cabecalho && <h3>{cabecalho}</h3>}
-                {filtered.length > 0 &&
-                    filtered.map((c, index) => (
+            {cabecalho && <h3>{cabecalho}</h3>}
+                {error && <div className="error-message">{error}</div>}
+                {Object.keys(filtered).length > 0 ? (
+                    Object.entries(filtered).map(([nome, qtd], index) => (
                         <Card key={index} className="card-main">
                             <Card.Body>
                                 <div className="card-column">
-                                    <span><strong>Nome: </strong>{c.name}</span>
+                                    <span>
+                                        <strong>Nome: </strong>
+                                        {nome}
+                                    </span>
                                 </div>
                                 <div className="card-column">
-                                    <span><strong>Quantidade: </strong>{c.qtd}</span>
+                                    <span>
+                                        <strong>Quantidade: </strong>
+                                        {qtd}
+                                    </span>
                                 </div>
                             </Card.Body>
                         </Card>
                     ))
-                }
+                ) : (
+                    <div className="no-data">Selecione o tipo</div>
+                )}
             </div>
         </>
     );

@@ -111,5 +111,67 @@ export const registroController = {
             console.error('Erro ao buscar cliente:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
+    },
+
+    consumoGeral: async (req, res) => {
+        try {
+            const clientes = await Cliente.findAll({
+                include: [
+                    {
+                        model: Compra,
+                        include: [
+                            {
+                                model: Produto,
+                                attributes: ['produto_nome', 'produto_preco'],
+                            },
+                            {
+                                model: Servico,
+                                attributes: ['servico_nome', 'servico_preco'],
+                            },
+                        ],
+                    }
+                ],
+            })
+
+            const listaProduto = {};
+
+            const listaServico = {};
+
+            clientes.forEach((c) => {
+                if(c.compras.length > 0){
+                    c.compras.forEach((co) => {
+                        if(co.produto){
+                            if(!listaProduto[co.produto.produto_nome]){
+                                listaProduto[co.produto.produto_nome] = 0
+                            }
+                            listaProduto[co.produto.produto_nome] += co.quantidade
+                        }
+                        if(co.servico){
+                            if(!listaServico[co.servico.servico_nome]){
+                                listaServico[co.servico.servico_nome] = 0
+                            }
+                            listaServico[co.servico.servico_nome] += 1
+                        }
+                    })
+                }
+            })
+
+            const produtoOrdenado = Object.fromEntries(
+                Object.entries(listaProduto).sort((a, b) => {
+                    return (b[1] as number) - (a[1] as number);
+                })
+            )
+            
+            const servicoOrdenado = Object.fromEntries(
+                Object.entries(listaServico).sort((a, b) => {
+                    return (b[1] as number) - (a[1] as number);
+                })
+            )
+
+            return res.status(200).json({produtoOrdenado, servicoOrdenado})
+        } catch (error) {
+            console.error('Erro ao buscar cliente:', error);
+            return res.status(500).json({ error: 'Internal server error' });
+        }
     }
 }

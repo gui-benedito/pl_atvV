@@ -1,5 +1,6 @@
 import { Table, Column, Model, DataType, BelongsToMany, HasMany, PrimaryKey, AutoIncrement, ForeignKey, BelongsTo } from 'sequelize-typescript'
 import { Cliente } from './Cliente'
+import { Compra } from './Compra'
 
 @Table({
     tableName: 'Pet',
@@ -47,4 +48,7 @@ export class Pet extends Model {
 
     @BelongsTo(() => Cliente)
     Cliente!: Cliente
+
+    @HasMany(() => Compra)
+    compras!: Compra[]
 }
