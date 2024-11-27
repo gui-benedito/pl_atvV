@@ -28,7 +28,7 @@ Certifique-se de ter o programa MySQL Workbench.
 
 <h4>3. Navegue até o diretório do frontend </h4>
 
-    cd ..\frontend\
+    cd .\pl_atvV\frontend
 
 <h4>3.1 Instale as dependências</h4>
 
