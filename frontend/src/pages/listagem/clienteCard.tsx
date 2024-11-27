@@ -67,17 +67,19 @@ export default function ClienteCard({
                 </div>
                 {show && (
                     <>
-                        <div className="card-infos">
+                        <div className="card-more-infos">
                             <div className="card-column">
                                 <span><strong>Nome:</strong> {cliente_nome}</span>
                             </div>
-                            <div className="card-column docs">
-                                <span><strong>CPF:</strong> {cliente_cpf}</span>
-                                <span><strong>Data de Emissão:</strong> {emissao_cpf}</span>
-                            </div>
-                            <div className="card-column docs">
-                                <span><strong>RG:</strong> {cliente_rg}</span>
-                                <span><strong>Data de Emissão:</strong> {emissao_rg}</span>
+                            <div className="docs">
+                                <div className="doc">
+                                    <span><strong>CPF:</strong> {cliente_cpf}</span>
+                                    <span><strong>Data de Emissão:</strong> {emissao_cpf}</span>
+                                </div>
+                                <div className="doc">
+                                    <span><strong>RG:</strong> {cliente_rg}</span>
+                                    <span><strong>Data de Emissão:</strong> {emissao_rg}</span>
+                                </div>
                             </div>
                         </div>
                         {/* <div className="card-infos-pets">

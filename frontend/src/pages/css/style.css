@@ -74,8 +74,19 @@
     flex-direction: column;
 }
 
-.docs span {
-    margin-left: 1em;
+.card-more-infos {
+    margin-top: 2em;
+    display: flex;
+    column-gap: 4em;
+}
+
+.docs, .doc {
+    display: flex;
+    column-gap: 4em;
+}
+.doc {
+    display: flex;
+    column-gap: 2em;
 }
 
 .confirma-buttons {
@@ -148,6 +159,14 @@
     margin: 1em auto;
 }
 
+@media (max-width: 460px ) {
+    .docs {
+        display: flex;
+        column-gap: 2em;
+        flex-direction: column;
+    }
+}
+
 @media (max-width: 690px) {
     .header {
         flex-direction: column;
@@ -205,6 +224,22 @@
         width: 90%;
         margin: 1em auto;
     }
+
+    .card-more-infos {
+        margin-top: 2em;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .docs {
+        display: flex;
+        column-gap: 4em;
+    }
+    .doc {
+        display: flex;
+        column-gap: 2em;
+        flex-direction: column;
+    }
 }
 
 @media (min-width: 690px) and (max-width: 768px) {
@@ -233,6 +268,22 @@
     .docs span{
         display: block;
         margin-left: 0;
+    }
+
+    .card-more-infos {
+        margin-top: 2em;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .docs {
+        display: flex;
+        column-gap: 4em;
+    }
+    .docs {
+        display: flex;
+        column-gap: 4em;
+        flex-direction: column;
     }
 }
 
@@ -273,4 +324,12 @@
         display: block;
         margin-left: 0;
     }
+
+    .card-more-infos {
+        margin-top: 2em;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    
 }
