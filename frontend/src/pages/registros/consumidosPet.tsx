@@ -1,62 +1,89 @@
 import { useState, useEffect } from "react";
-import Cliente from "../../modelo/cliente";
 import { Card, Col, Row, Form } from "react-bootstrap";
-import '../css/style.css';
+import "../css/style.css";
 import { registrosService } from "../../services/registrosService";
 
-type ClienteOrdenado = Record<string, number>;
+type Consumido = {
+    raca: string;
+    tipoAnimal: string;
+    tipo: string; // Identifica se é "produto" ou "serviço"
+    nome: string;
+    quantidade: number;
+};
 
 export default function ConsumidosPorPet() {
-    const [clientes, setClientes] = useState<Cliente[]>([]);
-    const [filtered, setFiltered] = useState<ClienteOrdenado[]>([]);
+    const [listaConsumidos, setListaConsumidos] = useState<Consumido[]>([]);
+    const [filtered, setFiltered] = useState<Consumido[]>([]);
     const [cabecalho, setCabecalho] = useState<string | null>(null);
-    const [tipo, setTipo] = useState("");
+    const [tipoAnimal, setTipoAnimal] = useState("");
     const [raca, setRaca] = useState("");
     const [racasDisponiveis, setRacasDisponiveis] = useState<string[]>([]);
-    const [cachorros, setCachorros] = useState<ClienteOrdenado[]>([])
-    const [gatos, setGatos] = useState<ClienteOrdenado[]>([])
+    const [tipo, setTipo] = useState<string | null>(null); // Define se o filtro é por "produto" ou "serviço"
     const [error, setError] = useState<string | null>(null);
 
     const fetchPets = async () => {
         try {
-            const { Gato, Cachorro } = await registrosService.getPetRaca()
-            setCachorros(Cachorro)
-            setCachorros(Gato)
+            const lista = await registrosService.getPetRaca();
+            console.log(lista);
+            setListaConsumidos(lista); // Atualiza a lista de consumidos com a resposta da API
         } catch (error) {
+            console.error(error);
             setError("Erro ao buscar dados. Tente novamente mais tarde.");
         }
-    }
+    };
 
     useEffect(() => {
-        fetchPets()
+        fetchPets();
     }, []);
 
-    const handleTipoChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleTipoAnimalChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const tipoSelecionado = e.target.value;
         const racasPorTipo: { [key: string]: string[] } = {
             Cachorro: ["Labrador", "Bulldog", "Poodle", "Pastor Alemão", "Golden Retriever", "SRD"],
-            Gato: ["Persa", "Siamês", "Maine Coon", "Bengal", "Sphynx", "SRD"]
+            Gato: ["Persa", "Siamês", "Maine Coon", "Bengal", "Sphynx", "SRD"],
         };
-        setTipo(tipoSelecionado);
+        setTipoAnimal(tipoSelecionado);
         setRacasDisponiveis(racasPorTipo[tipoSelecionado] || []);
-        setRaca("");
+        setRaca(""); // Limpa a raça selecionada ao mudar o tipo animal
     };
 
     const handleRacaChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        setRaca(e.target.value)
+        setRaca(e.target.value);
     };
 
-    const filtrarConsumidos = (tipo: string) => {
-        return 
-    }
+    const aplicarFiltro = (tipoSelecionado: string) => {
+        setTipo(tipoSelecionado); // Atualiza o tipo (produto ou serviço)
+
+        // Aplica os filtros diretamente
+        let resultados = listaConsumidos;
+
+        if (tipoAnimal) {
+            resultados = resultados.filter((item) => item.tipoAnimal === tipoAnimal);
+        }
+
+        if (raca) {
+            resultados = resultados.filter((item) => item.raca === raca);
+        }
+
+        resultados = resultados.filter((item) => item.tipo === tipoSelecionado);
+
+        setFiltered(resultados);
+
+        // Atualiza o cabeçalho para refletir os filtros aplicados
+        setCabecalho(
+            `Itens Consumidos - ${tipoSelecionado.charAt(0).toUpperCase() + tipoSelecionado.slice(1)} (${
+                tipoAnimal || "Todos"
+            } - ${raca || "Todas as Raças"})`
+        );
+    };
 
     return (
         <div className="container-fluid valor-filtro">
-            <h2>Filtrar por Tipo e/ou Raça de Pet</h2>
+            <h2>Filtrar por Tipo de Consumo, Tipo de Animal e/ou Raça</h2>
             <Row className="mb-3">
                 <Col>
-                    <Form.Select onChange={handleTipoChange} value={tipo}>
-                        <option value="">Selecione o Tipo</option>
+                    <Form.Select onChange={handleTipoAnimalChange} value={tipoAnimal}>
+                        <option value="">Selecione o Tipo de Animal</option>
                         <option value="Cachorro">Cachorro</option>
                         <option value="Gato">Gato</option>
                     </Form.Select>
@@ -65,30 +92,70 @@ export default function ConsumidosPorPet() {
                     <Form.Select onChange={handleRacaChange} value={raca} disabled={!racasDisponiveis.length}>
                         <option value="">Selecione a Raça</option>
                         {racasDisponiveis.map((raca, index) => (
-                            <option key={index} value={raca}>{raca}</option>
+                            <option key={index} value={raca}>
+                                {raca}
+                            </option>
                         ))}
                     </Form.Select>
                 </Col>
+                <Col>
+                    <div className="btn-group">
+                        <button
+                            onClick={() => aplicarFiltro("produto")}
+                            className={`header-btn ${tipo === "produto" ? "active" : ""}`}
+                        >
+                            Produtos
+                        </button>
+                        <button
+                            onClick={() => aplicarFiltro("servico")}
+                            className={`header-btn ${tipo === "servico" ? "active" : ""}`}
+                        >
+                            Serviços
+                        </button>
+                    </div>
+                </Col>
             </Row>
-            <div className="btn-filtro mb-3">
-                <button onClick={() => filtrarConsumidos("produto")} className="header-btn">Filtrar Produtos</button>
-                <button onClick={() => filtrarConsumidos("servico")} className="header-btn">Filtrar Serviços</button>
-            </div>
             <div className="Card-container container-registro">
                 {cabecalho && <h3>{cabecalho}</h3>}
-                {filtered.length > 0 && (
-                    filtered.map((c, index) => (
+                {filtered.length > 0 ? (
+                    filtered.map((item, index) => (
                         <Card key={index} className="card-main">
                             <Card.Body>
                                 <div className="card-column">
-                                    <span><strong>Nome: </strong>{c.name}</span>
+                                    <span>
+                                        <strong>Tipo Animal: </strong>
+                                        {item.tipoAnimal}
+                                    </span>
                                 </div>
                                 <div className="card-column">
-                                    <span><strong>Quantidade: </strong>{c.total}</span>
+                                    <span>
+                                        <strong>Raça: </strong>
+                                        {item.raca}
+                                    </span>
+                                </div>
+                                <div className="card-column">
+                                    <span>
+                                        <strong>Tipo: </strong>
+                                        {item.tipo}
+                                    </span>
+                                </div>
+                                <div className="card-column">
+                                    <span>
+                                        <strong>Nome: </strong>
+                                        {item.nome}
+                                    </span>
+                                </div>
+                                <div className="card-column">
+                                    <span>
+                                        <strong>Quantidade: </strong>
+                                        {item.quantidade}
+                                    </span>
                                 </div>
                             </Card.Body>
                         </Card>
                     ))
+                ) : (
+                    <p>Nenhum item encontrado.</p>
                 )}
             </div>
         </div>

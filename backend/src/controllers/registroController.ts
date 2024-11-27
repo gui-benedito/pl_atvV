@@ -197,49 +197,43 @@ export const registroController = {
                         model: Cliente,
                     },
                 ]
-            })
-
-            const lista = {produto: {}, servico: {}}
+            });
+        
+            const lista = [];
+        
             pets.forEach((p) => {
-                if(p.compras.length > 0){
+                if (p.compras.length > 0) {
                     p.compras.forEach((co) => {
-                        if(co.produto){
-                            if(!lista['produto'][p.pet_tipo]){
-                                lista['produto'][p.pet_tipo] = {}
-                            }
-        
-                            if(!lista['produto'][p.pet_tipo][p.pet_raca]){
-                                lista['produto'][p.pet_tipo][p.pet_raca] = {}
-                            }
-
-                            if(!lista['produto'][p.pet_tipo][p.pet_raca][co.produto.produto_nome]){
-                                lista['produto'][p.pet_tipo][p.pet_raca][co.produto.produto_nome] = 0
-                            }
-                            lista['produto'][p.pet_tipo][p.pet_raca][co.produto.produto_nome] += co.quantidade
+                        if (co.produto) {
+                            lista.push({
+                                raca: p.pet_raca,
+                                tipoAnimal: p.pet_tipo, // Gato ou Cachorro
+                                tipo: "produto", // Define o tipo como "produto"
+                                nome: co.produto.produto_nome,
+                                quantidade: co.quantidade
+                            });
                         }
-
-                        if(co.servico){
-                            if(!lista['servico'][p.pet_tipo]){
-                                lista['servico'][p.pet_tipo] = {}
-                            }
         
-                            if(!lista['servico'][p.pet_tipo][p.pet_raca]){
-                                lista['servico'][p.pet_tipo][p.pet_raca] = {}
-                            }
-
-                            if(!lista['servico'][p.pet_tipo][p.pet_raca][co.servico.servico_nome]){
-                                lista['servico'][p.pet_tipo][p.pet_raca][co.servico.servico_nome] = 0
-                            }
-                            lista['servico'][p.pet_tipo][p.pet_raca][co.servico.servico_nome] += 1
+                        if (co.servico) {
+                            lista.push({
+                                raca: p.pet_raca,
+                                tipoAnimal: p.pet_tipo, // Gato ou Cachorro
+                                tipo: "servico", // Define o tipo como "serviço"
+                                nome: co.servico.servico_nome,
+                                quantidade: 1 // Serviços geralmente são unitários
+                            });
                         }
-                    })
+                    });
                 }
-            })
-
-            return res.status(200).json(lista)
+            });
+        
+            // Ordenar a lista com base na quantidade (opcional, se necessário)
+            const listaOrdenada = lista.sort((a, b) => b.quantidade - a.quantidade);
+        
+            return res.status(200).json(listaOrdenada);
         } catch (error) {
             console.error('Erro ao buscar pets:', error);
             return res.status(500).json({ error: 'Internal server error' });
         }
-    }
+    }               
 }
